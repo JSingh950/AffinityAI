@@ -20,6 +20,57 @@ let initialized = false;
 
 const PARTICLE_COUNT = 300;
 
+function createMobiusGeometry(radius, halfWidth, segments, strips) {
+    const segs = Math.max(segments | 0, 8);
+    const sts = Math.max(strips | 0, 2);
+
+    const vertexCount = (segs + 1) * (sts + 1);
+    const positions = new Float32Array(vertexCount * 3);
+    const indices = [];
+
+    let index = 0;
+
+    for (let i = 0; i <= segs; i += 1) {
+        const u = (i / segs) * Math.PI * 2;
+        const cosU = Math.cos(u);
+        const sinU = Math.sin(u);
+        const cosHalfU = Math.cos(u / 2);
+        const sinHalfU = Math.sin(u / 2);
+
+        for (let j = 0; j <= sts; j += 1) {
+            const v = ((j / sts) - 0.5) * 2;
+            const w = halfWidth * v;
+
+            const x = (radius + w * cosHalfU) * cosU;
+            const y = (radius + w * cosHalfU) * sinU;
+            const z = w * sinHalfU;
+
+            positions[index] = x;
+            positions[index + 1] = y;
+            positions[index + 2] = z;
+            index += 3;
+        }
+    }
+
+    for (let i = 0; i < segs; i += 1) {
+        for (let j = 0; j < sts; j += 1) {
+            const a = (i * (sts + 1)) + j;
+            const b = ((i + 1) * (sts + 1)) + j;
+            const c = ((i + 1) * (sts + 1)) + (j + 1);
+            const d = (i * (sts + 1)) + (j + 1);
+
+            indices.push(a, b, d);
+            indices.push(b, c, d);
+        }
+    }
+
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setIndex(indices);
+    geometry.computeVertexNormals();
+    return geometry;
+}
+
 function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
 }
@@ -176,20 +227,17 @@ export function initLoop(canvas) {
     setupBloomCanvas();
     setupLights();
 
-    const mainGeometry = new THREE.TorusKnotGeometry(1, 0.35, 220, 42, 2, 3);
-    const mainMaterial = new THREE.MeshPhongMaterial({
-        color: '#1a0000',
-        emissive: '#8b0000',
-        emissiveIntensity: 0.8,
-        wireframe: false,
-        shininess: 140,
-        specular: '#ff2200'
+    const mainGeometry = createMobiusGeometry(1, 0.3, 260, 40);
+    const mainMaterial = new THREE.MeshStandardMaterial({
+        color: '#2a0000',
+        roughness: 0.92,
+        metalness: 0.0
     });
 
     mainKnot = new THREE.Mesh(mainGeometry, mainMaterial);
     scene.add(mainKnot);
 
-    const cageGeometry = new THREE.TorusKnotGeometry(1.08, 0.33, 220, 42, 3, 2);
+    const cageGeometry = createMobiusGeometry(1.08, 0.33, 260, 40);
     const cageMaterial = new THREE.MeshBasicMaterial({
         color: '#cc2200',
         opacity: 0.15,
