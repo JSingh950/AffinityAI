@@ -505,21 +505,6 @@ body.page-exit {
     transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
-.custom-cursor {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background: var(--gold);
-    pointer-events: none;
-    z-index: 120;
-    mix-blend-mode: screen;
-    box-shadow: 0 0 16px rgba(198, 167, 94, 0.6);
-    transform: translate3d(-100px, -100px, 0);
-}
-
 @keyframes page-fade-in {
     from {
         opacity: 0;

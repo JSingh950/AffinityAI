@@ -1,33 +1,614 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Affinity AI · Photos Division</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>affinity</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Geist:wght@200;300;400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#08090E;
+  --white:#F0EFE8;
+  --muted:rgba(240,239,232,0.44);
+  --faint:rgba(240,239,232,0.12);
+  --line:rgba(240,239,232,0.08);
+  --blue:#19D8FF;
+  --gap:3px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--white);font-family:'Geist',sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ─── NAV ──────────────────────────────────── */
+nav{
+  position:fixed;inset:0 0 auto 0;z-index:200;
+  height:52px;display:flex;align-items:center;justify-content:space-between;
+  padding:0 44px;
+  background:rgba(8,9,14,0.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--line);
+  opacity:0;
+}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:19px;letter-spacing:.1em;color:var(--white);text-decoration:none}
+.nav-right{display:flex;gap:28px}
+.nav-right a{font-size:11px;color:var(--muted);text-decoration:none;letter-spacing:.05em;transition:color .2s}
+.nav-right a:hover{color:var(--white)}
+
+/* ─── §1 HERO ──────────────────────────────
+   Layout: explicit two zones stacked inside 100vh.
+   TOP  zone: flex:1  → star renders here, perfectly centered in its space
+   BOTTOM zone: fixed height → text block, always visible
+   Star sits at world origin; camera looks at 0,0,0 → star dead-center in top zone.
+────────────────────────────────────────────── */
+.hero{
+  position:relative;width:100%;height:100vh;min-height:600px;
+  overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+}
+#hero-canvas{position:absolute;inset:0;z-index:0;width:100%!important;height:100%!important}
+.hero-vignette{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  /* Strong fade at very bottom so text is readable; gentle top fade */
+  background:
+    linear-gradient(to bottom, rgba(8,9,14,.55) 0%, transparent 12%),
+    linear-gradient(to top,    rgba(8,9,14,1)   0%, rgba(8,9,14,.6) 18%, transparent 42%)
+}
+/* Bottom zone: text block sits here, star floats above it in 3D */
+.hero-text{
+  position:relative;z-index:2;
+  flex:0 0 auto;
+  width:100%;
+  padding:0 0 52px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;
+}
+.h-eye{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);opacity:0}
+.h-h1{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(40px,6vw,82px);line-height:1;letter-spacing:-.02em;opacity:0}
+.h-body{font-size:13px;line-height:1.7;color:var(--muted);max-width:340px;opacity:0}
+
+/* ─── §2 PRODUCT PANEL ─────────────────────── */
+.product{
+  display:block;border-top:1px solid var(--line);
+  padding:44px 60px 40px;
+  display:flex;flex-direction:column;gap:11px;
+  text-decoration:none;color:inherit;transition:background .25s;
+}
+.product:hover{background:rgba(255,255,255,.016)}
+.p-badge{font-size:9px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--blue);display:flex;align-items:center;gap:8px}
+.p-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--blue);box-shadow:0 0 7px var(--blue);flex-shrink:0}
+.p-title{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:clamp(30px,4vw,52px);letter-spacing:-.01em;line-height:1}
+.p-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:var(--muted);max-width:460px}
+.p-cta{margin-top:8px;font-size:10px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--blue);display:inline-flex;align-items:center;gap:8px;transition:gap .2s}
+.product:hover .p-cta{gap:14px}
+
+/* ─── §3 ICONIC ─────────────────────────────
+   Full-viewport portrait. Text overlaid at bottom.
+────────────────────────────────────────────── */
+.iconic{position:relative;border-top:1px solid var(--line);height:100vh;min-height:500px;overflow:hidden}
+.iconic .ph{position:absolute;inset:0}
+.iconic .ph img{width:100%;height:100%;object-fit:cover;object-position:center 18%;filter:brightness(.68)}
+.iconic-over{
+  position:absolute;bottom:0;left:0;right:0;padding:0 60px 60px;
+  background:linear-gradient(to top,rgba(8,9,14,.96) 0%,rgba(8,9,14,.35) 45%,transparent 100%)
+}
+.iconic-h{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(36px,5.5vw,78px);line-height:1.02;letter-spacing:-.025em}
+.iconic-h em{font-style:italic;color:rgba(240,239,232,.52)}
+
+/* ─── §4 ARTIST ─────────────────────────────
+   cianjoseph.com: two equal portrait columns.
+   Both same aspect-ratio; gap 3px.
+────────────────────────────────────────────── */
+.artist{border-top:1px solid var(--line)}
+.artist-cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+.artist-cols .ph{aspect-ratio:2/3;overflow:hidden}
+.artist-cols .ph img{width:100%;height:100%;object-fit:cover;object-position:center 12%;filter:brightness(.86);transition:filter .4s,transform .5s}
+.artist-cols .ph:hover img{filter:brightness(1);transform:scale(1.03)}
+.artist-cap{
+  padding:28px 60px 32px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--line)
+}
+.artist-cap h2{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(24px,3.5vw,48px);letter-spacing:-.02em;line-height:1}
+.artist-link{font-size:10px;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:8px;transition:color .2s,gap .2s}
+.artist-link:hover{color:var(--white);gap:14px}
+
+/* ─── §5 WARDROBE ────────────────────────────
+   cianjoseph.com:
+     Left col  — CJ703839 tall portrait
+     Right col — HobokenFramesFinal (top) + CJ704192 (bottom), stacked
+     Below     — CJ704163 full-width landscape
+
+   Key: right col drives the row height via two stacked aspect-ratio boxes.
+   Left col stretches to fill that same height (align-items:stretch).
+────────────────────────────────────────────── */
+.ward{border-top:1px solid var(--line)}
+.ward-head{
+  padding:44px 60px 28px;
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:clamp(26px,4vw,58px);letter-spacing:-.02em;line-height:1
+}
+.ward-head em{font-style:italic;color:var(--muted)}
+.ward-cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap);align-items:stretch}
+/* Left portrait — must fill whatever height the right col creates */
+.w-l{overflow:hidden}
+.w-l img{width:100%;height:100%;object-fit:cover;object-position:center top;filter:brightness(.84);transition:filter .4s}
+.w-l:hover img{filter:brightness(1)}
+/* Right col: two stacked landscape images */
+.w-r{display:flex;flex-direction:column;gap:var(--gap)}
+.w-r .ph{aspect-ratio:4/3;overflow:hidden}
+.w-r .ph img{width:100%;height:100%;object-fit:cover;object-position:center 28%;filter:brightness(.84);transition:filter .4s}
+.w-r .ph:hover img{filter:brightness(1)}
+/* Full-width landscape strip below the two-col grid */
+.ward-wide{margin-top:var(--gap);overflow:hidden}
+.ward-wide .ph{aspect-ratio:16/7}
+.ward-wide .ph img{width:100%;height:100%;object-fit:cover;object-position:center 32%;filter:brightness(.84);transition:filter .4s}
+.ward-wide:hover .ph img{filter:brightness(1)}
+
+/* ─── §6 DESIGNED FOR THE ROOM ───────────────
+   cianjoseph.com: two landscape photos side-by-side.
+   Left: ~60% width. Right: ~40% width. Same row height.
+   Anchor height on left cell (3/2 ratio); right cell height
+   is set to match left via CSS custom property + JS.
+   Simpler: use a wrapper with overflow:hidden and set a
+   consistent row height via aspect-ratio on the wrapper.
+────────────────────────────────────────────── */
+.room{border-top:1px solid var(--line)}
+.room-head{
+  padding:44px 60px 28px;
+  font-family:'Cormorant Garamond',serif;font-weight:300;
+  font-size:clamp(26px,4vw,58px);letter-spacing:-.02em;line-height:1
+}
+/* Grid: 3fr + 2fr columns, row height driven by left cell's 3:2 ratio */
+.room-cols{display:grid;grid-template-columns:3fr 2fr;gap:var(--gap)}
+.room-cols .ph-left{aspect-ratio:3/2;overflow:hidden}
+/* Right cell matches left cell's pixel height using align-items stretch */
+.room-cols{align-items:stretch}
+.room-cols .ph-right{overflow:hidden}
+.room-cols .ph-left img,
+.room-cols .ph-right img{width:100%;height:100%;object-fit:cover;object-position:center 22%;filter:brightness(.84);transition:filter .4s,transform .5s}
+.room-cols .ph-left:hover img,
+.room-cols .ph-right:hover img{filter:brightness(1);transform:scale(1.03)}
+
+/* ─── §7 AFFINITY STAR ────────────────────────
+   Same two-zone layout as hero for identical star centering.
+────────────────────────────────────────────── */
+.star-sect{
+  position:relative;height:100vh;min-height:560px;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;
+  border-top:1px solid var(--line);
+}
+#star-canvas{position:absolute;inset:0;z-index:0;width:100%!important;height:100%!important}
+.star-vignette{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(to bottom, rgba(8,9,14,.5) 0%, transparent 12%),
+    linear-gradient(to top,    rgba(8,9,14,1)  0%, rgba(8,9,14,.6) 18%, transparent 42%)
+}
+.star-text{
+  position:relative;z-index:2;
+  flex:0 0 auto;width:100%;
+  padding:0 0 52px;
+  display:flex;flex-direction:column;align-items:center;gap:10px;
+  text-align:center;
+}
+.s-label{font-size:9px;font-weight:500;letter-spacing:.28em;text-transform:uppercase;color:var(--blue);opacity:0}
+.s-h{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(46px,7vw,100px);line-height:.95;letter-spacing:-.025em;opacity:0}
+.s-tag{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:17px;color:var(--muted);opacity:0}
+
+/* ─── §8 MARQUEE ──────────────────────────── */
+.mq{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0;overflow:hidden;white-space:nowrap}
+.mq-t{display:inline-flex;gap:44px;animation:mq 22s linear infinite}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mq-i{font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--faint)}
+.mq-s{color:var(--blue);opacity:.3}
+
+/* ─── §8 PROCESS ─────────────────────────── */
+.process{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.ps{padding:44px 40px;border-right:1px solid var(--line)}
+.ps:last-child{border-right:none}
+.ps-n{font-family:'Cormorant Garamond',serif;font-size:11px;letter-spacing:.2em;color:var(--blue);margin-bottom:16px}
+.ps-t{font-family:'Cormorant Garamond',serif;font-weight:400;font-size:25px;letter-spacing:-.01em;margin-bottom:12px}
+.ps-b{font-size:13px;line-height:1.72;color:var(--muted)}
+
+/* ─── §9 CONTACT ─────────────────────────── */
+.contact{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+/* Photo cell: aspect-ratio drives height for both cells */
+.ct-photo{aspect-ratio:3/4;overflow:hidden}
+.ct-photo img{width:100%;height:100%;object-fit:cover;object-position:center;filter:brightness(.75);transition:transform 7s ease}
+.contact:hover .ct-photo img{transform:scale(1.04)}
+/* Text cell stretches to match photo */
+.ct-txt{padding:52px 56px;display:flex;flex-direction:column;justify-content:center;gap:20px}
+.ct-label{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--blue)}
+.ct-h{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:clamp(26px,3.8vw,52px);line-height:1.05;letter-spacing:-.02em}
+.ct-body{font-size:13px;line-height:1.72;color:var(--muted);max-width:300px}
+
+/* ─── FOOTER ─────────────────────────────── */
+footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-items:center;justify-content:space-between}
+.f-logo{font-family:'Cormorant Garamond',serif;font-weight:300;font-size:17px;letter-spacing:.08em;color:var(--muted)}
+.f-links{display:flex;gap:26px}
+.f-links a{font-size:11px;color:var(--faint);text-decoration:none;letter-spacing:.05em;transition:color .2s}
+.f-links a:hover{color:var(--muted)}
+.f-copy{font-size:11px;color:var(--faint)}
+
+/* ─── REVEAL ─────────────────────────────── */
+.rv{opacity:0;transform:translateY(16px)}
+.rv-r{opacity:0;transform:translateX(16px)}
+</style>
 </head>
 <body>
-    <nav class="site-nav" aria-label="Main navigation">
-        <a class="brand" href="../index.html">AFFINITY</a>
-        <div class="nav-links">
-            <a href="ai.html">AI</a>
-            <span aria-hidden="true">·</span>
-            <a href="photos.html">PHOTOS</a>
-        </div>
-    </nav>
 
-    <main class="page-shell">
-        <section class="page-wrap">
-            <p class="panel-label">Affinity Photos</p>
-            <h1>Brand Visibility Through Precision Creative</h1>
-            <p>Affinity Photos delivers search-focused marketing and premium visual production to help modern businesses grow authority and conversions. Services include SEO optimization, paid ad strategy, and professional event photography.</p>
-            <p>This division is built to work in lockstep with Affinity AI, translating backend capability into a clear market presence and compounding demand.</p>
-        </section>
-    </main>
+<nav id="nav">
+  <a href="/" class="nav-logo">affinity</a>
+  <div class="nav-right">
+    <a href="#">Login</a>
+    <a href="#">Account</a>
+  </div>
+</nav>
 
-    <script type="module" src="../js/main.js"></script>
+<!-- §1 HERO -->
+<section class="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-vignette"></div>
+  <div class="hero-text">
+    <div class="h-eye" id="hEye">affinity — Creative Studio</div>
+    <h1 class="h-h1" id="hH1">Our Purpose</h1>
+    <p class="h-body" id="hBody">Adapting your company to the changing AI landscape — customizing AI solutions on client.</p>
+  </div>
+</section>
+
+<!-- §2 PRODUCT PANEL -->
+<a class="product rv" href="#affinity-star">
+  <div class="p-badge">Marketing</div>
+  <div class="p-title">Affinity Star</div>
+  <div class="p-tag">Star-driven marketing. Built to shine.</div>
+  <div class="p-cta">Services →</div>
+</a>
+
+<!-- §3 ICONIC -->
+<section class="iconic">
+  <div class="ph">
+    <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/060503dd-4c23-41b3-afa1-7e3622332df6/CJ702987.jpg" alt="Your home should be iconic" />
+  </div>
+  <div class="iconic-over">
+    <h2 class="iconic-h rv">Your home…<br><em>should be iconic.</em></h2>
+  </div>
+</section>
+
+<!-- §4 ARTIST — two equal portrait columns -->
+<section class="artist" id="cian">
+  <div class="artist-cols">
+    <div class="ph rv">
+      <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/c15c8425-5ca5-427d-b0d8-accf3b8e332b/CJ703028.jpg" alt="Cian Joseph" />
+    </div>
+    <div class="ph rv" style="--rv-d:.08s">
+      <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/375209b5-e567-4bb2-b66f-48764db8d2d7/CJ706195.jpg" alt="Cian Joseph" />
+    </div>
+  </div>
+  <div class="artist-cap rv">
+    <h2>The Artist.</h2>
+    <a href="#" class="artist-link">this is cian →</a>
+  </div>
+</section>
+
+<!-- §5 WARDROBE & TEXTURES -->
+<section class="ward">
+  <h2 class="ward-head rv">Wardrobe &amp; <em>Textures…</em></h2>
+  <div class="ward-cols">
+    <!-- Left: tall portrait — height stretches to match right two-stack -->
+    <div class="w-l rv">
+      <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/5e9fa1a8-7a3e-43aa-96db-81ba63484b6a/CJ703839.jpg" alt="Wardrobe portrait" />
+    </div>
+    <!-- Right: two stacked landscape photos -->
+    <div class="w-r">
+      <div class="ph rv">
+        <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/1f05293f-ff3f-4780-95cb-9600a01e7cfe/HobokenFramesFinal.jpg" alt="Hoboken Frames" style="object-position:center 25%" />
+      </div>
+      <div class="ph rv">
+        <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/8abfbc66-e515-4576-8b86-586031937be3/CJ704192.jpg" alt="Wardrobe detail" />
+      </div>
+    </div>
+  </div>
+  <!-- Full-width landscape below -->
+  <div class="ward-wide rv">
+    <div class="ph">
+      <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/7e71d63f-4b43-4469-ad2b-e829b9ed00c9/CJ704163.jpg" alt="Wardrobe wide" style="object-position:center 30%" />
+    </div>
+  </div>
+</section>
+
+<!-- §6 DESIGNED FOR THE ROOM -->
+<section class="room">
+  <h2 class="room-head rv">Designed for the Room.</h2>
+  <div class="room-cols">
+    <div class="ph-left rv">
+      <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/fed103ec-76ac-4882-a713-e2854009d027/HobokenFramesFinal.jpg" alt="Room wide" style="object-position:center 20%" />
+    </div>
+    <div class="ph-right rv">
+      <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/05cc554a-21cf-4219-92ce-1966b7bddabf/HobokenFramesFinal.jpg" alt="Room detail" style="object-position:center 20%" />
+    </div>
+  </div>
+</section>
+
+<!-- §7 AFFINITY STAR -->
+<section class="star-sect" id="affinity-star">
+  <canvas id="star-canvas"></canvas>
+  <div class="star-vignette"></div>
+  <div class="star-text">
+    <div class="s-label" id="sLab">Affinity Star</div>
+    <h2 class="s-h" id="sH">Affinity<br>Star</h2>
+    <div class="s-tag" id="sTag">Star-driven marketing. Built to shine.</div>
+  </div>
+</section>
+
+<!-- §8 MARQUEE + PROCESS -->
+<div class="mq">
+  <div class="mq-t">
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+    <span class="mq-i">It's a feeling</span><span class="mq-s"> 〰️ </span>
+  </div>
+</div>
+<div class="process">
+  <div class="ps rv">
+    <div class="ps-n">01</div>
+    <div class="ps-t">We Listen.</div>
+    <div class="ps-b">We begin with a thoughtful in-home consultation to understand your style, space, and emotional tone.</div>
+  </div>
+  <div class="ps rv">
+    <div class="ps-n">02</div>
+    <div class="ps-t">We Shape.</div>
+    <div class="ps-b">We design a personalized photoshoot that reflects your essence — every detail curated with intention.</div>
+  </div>
+  <div class="ps rv">
+    <div class="ps-n">03</div>
+    <div class="ps-t">You See.</div>
+    <div class="ps-b">We give you the five best pictures, custom-frame your favorite, and deliver it to you.</div>
+  </div>
+</div>
+
+<!-- §9 CONTACT -->
+<section class="contact" id="contact">
+  <div class="ct-photo">
+    <img src="https://images.squarespace-cdn.com/content/v1/67cb4fd8b6065c0a074d998f/49425126-f35e-47bf-ae03-6836ea2b2e07/pexels-carlos-montelara-3450804-6023618-3+%281%29.jpg" alt="Get in touch" />
+  </div>
+  <div class="ct-txt rv-r">
+    <div class="ct-label">Start the Story</div>
+    <h2 class="ct-h">Get in touch.<br>With Affinity.</h2>
+    <p class="ct-body">Whether you're looking to transform your brand, automate your operations, or capture something timeless — we're ready to begin.</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="rv">
+  <div class="f-logo">affinity</div>
+  <div class="f-links">
+    <a href="#">About</a>
+    <a href="#">Contact</a>
+    <a href="#">Follow</a>
+  </div>
+  <div class="f-copy">© 2025 Affinity.</div>
+</footer>
+
+<script>
+/* ══ THREE.JS HELPERS ══════════════════════════════════════════ */
+function buildStarGeo(oR,iR,pts,depth,bev){
+  const sh=new THREE.Shape(),step=(Math.PI*2)/pts;
+  for(let i=0;i<pts;i++){
+    const oa=i*step-Math.PI/2,ia=oa+step/2;
+    sh[i===0?'moveTo':'lineTo'](Math.cos(oa)*oR,Math.sin(oa)*oR);
+    sh.lineTo(Math.cos(ia)*iR,Math.sin(ia)*iR);
+  }
+  sh.closePath();
+  const g=new THREE.ExtrudeGeometry(sh,{depth,bevelEnabled:true,bevelThickness:bev,bevelSize:bev*.6,bevelSegments:12});
+  g.center();g.computeVertexNormals();return g;
+}
+function buildEnv(){
+  const sz=256,c=document.createElement('canvas');c.width=sz*4;c.height=sz*2;
+  const x=c.getContext('2d');
+  x.fillStyle='#05070E';x.fillRect(0,0,c.width,c.height);
+  const s1=x.createRadialGradient(sz*1.4,sz*.45,0,sz*1.4,sz*.45,sz*.9);
+  s1.addColorStop(0,'rgba(140,200,255,1)');s1.addColorStop(.4,'rgba(50,110,220,.28)');s1.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=s1;x.fillRect(0,0,c.width,c.height);
+  const s2=x.createRadialGradient(sz*3,sz*1.5,0,sz*3,sz*1.5,sz*.5);
+  s2.addColorStop(0,'rgba(25,216,255,.45)');s2.addColorStop(1,'rgba(0,0,0,0)');
+  x.fillStyle=s2;x.fillRect(0,0,c.width,c.height);
+  const t=new THREE.CanvasTexture(c);t.mapping=THREE.EquirectangularReflectionMapping;return t;
+}
+function glowTex(stops){
+  const sz=512,c=document.createElement('canvas');c.width=c.height=sz;
+  const x=c.getContext('2d'),g=x.createRadialGradient(sz/2,sz/2,0,sz/2,sz/2,sz/2);
+  stops.forEach(([p,col])=>g.addColorStop(p,col));
+  x.fillStyle=g;x.fillRect(0,0,sz,sz);return new THREE.CanvasTexture(c);
+}
+function mkHalo(sc,sz,stops){
+  const m=new THREE.Mesh(new THREE.PlaneGeometry(sz,sz),
+    new THREE.MeshBasicMaterial({map:glowTex(stops),transparent:true,opacity:0,
+      depthWrite:false,blending:THREE.AdditiveBlending,side:THREE.DoubleSide}));
+  sc.add(m);return m;
+}
+function starMat(){
+  return new THREE.MeshPhysicalMaterial({
+    color:0x1055CC,emissive:0x030E28,emissiveIntensity:.35,
+    metalness:.92,roughness:.05,clearcoat:1,clearcoatRoughness:.02,
+    reflectivity:1,envMapIntensity:2
+  });
+}
+const HI=[[0,'rgba(40,110,255,.75)'],[.18,'rgba(22,78,210,.35)'],[.45,'rgba(10,42,155,.1)'],[1,'rgba(0,0,0,0)']];
+const HO=[[0,'rgba(15,55,195,.38)'],[.35,'rgba(6,28,135,.1)'],[1,'rgba(0,0,0,0)']];
+function addBgStars(sc){
+  const n=480,p=new Float32Array(n*3);
+  for(let i=0;i<n;i++){p[i*3]=(Math.random()-.5)*140;p[i*3+1]=(Math.random()-.5)*140;p[i*3+2]=-20-Math.random()*80;}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.BufferAttribute(p,3));
+  sc.add(new THREE.Points(g,new THREE.PointsMaterial({color:0x8899BB,size:.03,transparent:true,opacity:.14,blending:THREE.AdditiveBlending,depthWrite:false})));
+}
+function addLights(sc){
+  sc.add(new THREE.AmbientLight(0x020610,8));
+  const kL=new THREE.PointLight(0x99C8FF,20,20);kL.position.set(-3.5,4.5,4.5);sc.add(kL);
+  sc.add(new THREE.PointLight(0x0230AA,6,16)).position.set(5,-2,2);
+  sc.add(new THREE.PointLight(0x00C0FF,9,14)).position.set(.5,-1,-5);
+  const cL=new THREE.PointLight(0x2255FF,0,8);sc.add(cL);
+  return{kL,cL};
+}
+
+/* ── STAR FACTORY ──────────────────────────────────────────────
+   Strategy: camera is FIXED at (0,0,7.5) looking at (0,0,0).
+   World origin = canvas center. To put the star in the center of
+   the star-zone (above the text block), we shift the star MESH up
+   in world-Y by the amount needed.
+
+   Derivation:
+     textH  = pixel height of the text block below the star zone
+     star zone center is textH/2 pixels ABOVE the canvas center
+     world units per pixel at z=0:
+       scale = 2 * camZ * tan(fov/2) / H
+     meshY = (textH/2) * scale
+   Halos stay on `sc` (not pivot) so they always face the camera;
+   we manually sync their Y to pivot.position.y each frame.
+──────────────────────────────────────────────────────────────── */
+function makeStar(canvasEl, textEl, geoArgs, onReady){
+  let W=innerWidth, H=innerHeight;
+  const rdr=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
+  rdr.setSize(W,H);rdr.setPixelRatio(Math.min(devicePixelRatio,2));
+  rdr.toneMapping=THREE.ACESFilmicToneMapping;rdr.toneMappingExposure=1.15;
+
+  const sc=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(38,W/H,.1,200);
+  const camZ=7.5;
+  cam.position.set(0,0,camZ);
+  cam.lookAt(0,0,0);
+  sc.environment=buildEnv();
+
+  // Star mesh on a pivot group for Y offset
+  const pivot=new THREE.Group(); sc.add(pivot);
+  const geo=buildStarGeo(...geoArgs), mat=starMat();
+  const star=new THREE.Mesh(geo,mat); star.scale.setScalar(.001); pivot.add(star);
+
+  // Halos on sc (not pivot) — they must always face the camera (billboards)
+  const hI=mkHalo(sc,5.5,HI), hO=mkHalo(sc,10,HO);
+  addBgStars(sc);
+  const{kL,cL}=addLights(sc);
+
+  function repositionPivot(){
+    const textH = textEl ? textEl.offsetHeight : 0;
+    const worldPerPx = 2*camZ*Math.tan((38*Math.PI/180)/2)/H;
+    const y = (textH/2)*worldPerPx;
+    pivot.position.y = y;
+    hI.position.y = y;
+    hO.position.y = y;
+  }
+
+  function onResize(){
+    W=innerWidth; H=innerHeight;
+    cam.aspect=W/H; cam.updateProjectionMatrix();
+    rdr.setSize(W,H);
+    repositionPivot();
+  }
+  requestAnimationFrame(()=>{ repositionPivot(); });
+  window.addEventListener('resize', onResize);
+
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/W-.5)*2;my=(e.clientY/H-.5)*2;});
+
+  const clk=new THREE.Clock(); let ry=0,px=0,py=0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    const dt=clk.getDelta();
+    ry+=dt*.13; px+=(-my*.15-px)*.022; py+=(mx*.15-py)*.022;
+    star.rotation.y=ry+py; star.rotation.x=.04+px;
+    hI.quaternion.copy(cam.quaternion);
+    hO.quaternion.copy(cam.quaternion);
+    rdr.render(sc,cam);
+  })();
+
+  onReady({star,hI,hO,cL,kL,mat,sc,pivot,cam});
+}
+
+/* ── §1 HERO STAR ──────────────────────────── */
+makeStar(
+  document.getElementById('hero-canvas'),
+  document.querySelector('.hero-text'),
+  [1.28, .50, 5, .46, .18],
+  function({star,hI,hO,cL,kL,mat}){
+    const S={sc:.001,hI:0,hO:0,cI:0,kA:0};
+    const tl=anime.timeline({easing:'easeOutQuart'});
+    tl.add({targets:S,sc:1,duration:1500,easing:'easeOutBack(1.1)',update:()=>star.scale.setScalar(S.sc)})
+      .add({targets:S,hI:1,hO:.55,cI:5,duration:1000,update:()=>{hI.material.opacity=S.hI;hO.material.opacity=S.hO;cL.intensity=S.cI;}},'-=900')
+      .add({targets:'#nav',opacity:[0,1],duration:400,easing:'easeOutCubic'},0)
+      .add({targets:'#hEye',opacity:[0,1],translateY:[6,0],duration:450,easing:'easeOutCubic'},'-=250')
+      .add({targets:'#hH1',opacity:[0,1],translateY:[16,0],duration:600,easing:'easeOutCubic'},'-=350')
+      .add({targets:'#hBody',opacity:[0,1],translateY:[10,0],duration:500,easing:'easeOutCubic'},'-=420');
+    setTimeout(()=>{
+      anime({targets:S,sc:[1,1.024,1],duration:5500,loop:true,easing:'easeInOutSine',update:()=>star.scale.setScalar(S.sc)});
+      anime({targets:S,hI:[1,.52,1],hO:[.55,.2,.55],duration:5500,loop:true,easing:'easeInOutSine',update:()=>{hI.material.opacity=S.hI;hO.material.opacity=S.hO;}});
+      anime({targets:S,cI:[5,10,5],duration:4800,loop:true,easing:'easeInOutSine',update:()=>{cL.intensity=S.cI;}});
+      anime({targets:mat,emissiveIntensity:[.35,.75,.35],duration:4800,loop:true,easing:'easeInOutSine'});
+      anime({targets:S,kA:[0,Math.PI*2],duration:22000,loop:true,easing:'linear',update:()=>{
+        kL.position.x=Math.cos(S.kA)*5;kL.position.z=Math.sin(S.kA)*3;kL.position.y=4+Math.sin(S.kA*.5)*2;
+      }});
+    },1800);
+  }
+);
+
+/* ── §7 AFFINITY STAR ──────────────────────── */
+let starReady=false;
+makeStar(
+  document.getElementById('star-canvas'),
+  document.querySelector('.star-text'),
+  [1.32, .52, 5, .48, .19],
+  function({star,hI,hO,cL,kL,mat,sc,pivot,cam}){
+    const hX=mkHalo(sc,15,[[0,'rgba(10,40,170,.2)'],[.5,'rgba(5,20,110,.05)'],[1,'rgba(0,0,0,0)']]);
+    window.addEventListener('resize',()=>{ hX.position.y=pivot.position.y; });
+    requestAnimationFrame(()=>{ hX.position.y=pivot.position.y; });
+    // Billboard hX each frame
+    (function trackHX(){ requestAnimationFrame(trackHX); hX.quaternion.copy(cam.quaternion); hX.position.y=pivot.position.y; })();
+    const S={sc:.001,hI:0,hO:0,hX:0,cI:0,kA:0};
+    new IntersectionObserver(entries=>{
+      if(!entries[0].isIntersecting||starReady)return;
+      starReady=true;
+      const tl=anime.timeline({easing:'easeOutQuart'});
+      tl.add({targets:S,sc:1,duration:1400,easing:'easeOutBack(1.1)',update:()=>star.scale.setScalar(S.sc)})
+        .add({targets:S,hI:1,hO:.6,hX:.4,cI:6,duration:1000,update:()=>{hI.material.opacity=S.hI;hO.material.opacity=S.hO;hX.material.opacity=S.hX;cL.intensity=S.cI;}},'-=850')
+        .add({targets:'#sLab',opacity:[0,1],translateY:[6,0],duration:400,easing:'easeOutCubic'},'-=500')
+        .add({targets:'#sH',opacity:[0,1],translateY:[18,0],duration:600,easing:'easeOutCubic'},'-=350')
+        .add({targets:'#sTag',opacity:[0,1],translateY:[10,0],duration:500,easing:'easeOutCubic'},'-=400');
+      setTimeout(()=>{
+        anime({targets:S,sc:[1,1.026,1],duration:5200,loop:true,easing:'easeInOutSine',update:()=>star.scale.setScalar(S.sc)});
+        anime({targets:S,hI:[1,.48,1],hO:[.6,.18,.6],duration:5200,loop:true,easing:'easeInOutSine',update:()=>{hI.material.opacity=S.hI;hO.material.opacity=S.hO;}});
+        anime({targets:S,cI:[6,12,6],duration:4800,loop:true,easing:'easeInOutSine',update:()=>{cL.intensity=S.cI;}});
+        anime({targets:mat,emissiveIntensity:[.35,.88,.35],duration:4800,loop:true,easing:'easeInOutSine'});
+        anime({targets:S,kA:[0,Math.PI*2],duration:20000,loop:true,easing:'linear',update:()=>{
+          kL.position.x=Math.cos(S.kA)*5;kL.position.z=Math.sin(S.kA)*3;kL.position.y=4+Math.sin(S.kA*.5)*2;
+        }});
+      },1600);
+    },{threshold:.1}).observe(document.getElementById('affinity-star'));
+  }
+);
+
+/* ── SCROLL REVEALS ────────────────────────── */
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const el=e.target;
+    anime({
+      targets:el,opacity:[0,1],
+      translateY:el.classList.contains('rv')?[16,0]:0,
+      translateX:el.classList.contains('rv-r')?[16,0]:0,
+      duration:700,easing:'easeOutCubic'
+    });
+    ro.unobserve(el);
+  });
+},{threshold:.06,rootMargin:'0px 0px -32px 0px'});
+document.querySelectorAll('.rv,.rv-r').forEach(el=>{
+  el.style.opacity='0';
+  ro.observe(el);
+});
+</script>
 </body>
 </html>

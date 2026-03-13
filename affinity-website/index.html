@@ -3,184 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Affinity AI</title>
-    <meta name="description" content="Affinity AI is a dual-sector technology and marketing firm.">
+    <title>Affinity</title>
+    <meta name="description" content="Affinity is a dual-sector technology and marketing firm.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
     <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; cursor: default !important; }
+        a, button, [role="button"] { cursor: pointer !important; }
+
         :root {
-            --panel-border: 1px solid rgba(139, 0, 0, 0.18);
             --maroon: #3b0909;
-            --deep-maroon: #1b0504;
-            --star-field: #0b0b26;
+            --cream: #fdf1e0;
+            --hero-gradient: linear-gradient(180deg, rgba(43,2,15,1) 0%, rgba(59,9,12,1) 40%, rgba(12,12,35,1) 75%, rgba(3,3,8,1) 100%);
+            --page-bg: #050203;
+            --panel-rule: linear-gradient(90deg, rgba(253,241,224,0.9), rgba(253,241,224,0));
         }
+
+        html { scroll-behavior: smooth; }
 
         body {
-            background: #050203;
+            background: var(--page-bg);
             color: #f5f5f5;
+            font-family: "Inter", sans-serif;
+            overflow-x: hidden;
         }
 
+        /* Progress bar */
+        .progress-track { position: fixed; top: 0; left: 0; width: 100%; height: 2px; background: rgba(255,255,255,0.08); z-index: 200; }
+        #scroll-progress { display: block; height: 100%; width: 0%; background: linear-gradient(90deg, rgba(139,0,0,0.9), rgba(253,241,224,0.6)); transition: width 0.1s linear; }
+
+        /* Nav */
+        .site-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2.5rem; background: linear-gradient(180deg, rgba(5,2,3,0.85) 0%, transparent 100%); backdrop-filter: blur(4px); }
+        .brand { font-family: "Syne", sans-serif; font-size: 1.1rem; font-weight: 800; letter-spacing: 0.2em; color: var(--cream); text-decoration: none; }
+        .nav-links { display: flex; align-items: center; gap: 1.25rem; }
+        .nav-links a { font-family: "DM Mono", monospace; font-size: 0.75rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.7); text-decoration: none; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--cream); }
+        .nav-links span { color: rgba(255,255,255,0.25); font-size: 0.7rem; }
+
+        /*
+         * HERO SHELL — height must equal WORDMARK_VH + (PANEL_COUNT × PANEL_VH)
+         * JS constants:  WORDMARK_VH=60  PANEL_VH=60  PANEL_COUNT=5
+         * Total:         60 + 300 = 360vh
+         */
         .scroll-shell {
             position: relative;
-            min-height: 90vh;
+            height: 360vh;
+            background: var(--hero-gradient);
+        }
+        .scroll-shell-sticky {
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4rem 1.5rem 2rem;
-            background: linear-gradient(180deg, var(--maroon) 0%, rgba(42, 7, 7, 0.85) 55%, rgba(10, 4, 5, 0.95) 100%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            overflow: hidden;
         }
 
-        .hero-visuals {
-            position: absolute;
-            inset: 0;
-            z-index: 0;
-            overflow: hidden;
-            pointer-events: none;
+        /* BG decorations */
+        .hero-visuals { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+        .hero-grad { position: absolute; inset: -20% auto auto -15%; width: 180%; height: 120%; background: linear-gradient(135deg, rgba(0,0,0,0.65), rgba(60,0,0,0.65)); transform: rotate(-6deg); border-radius: 48%; filter: blur(0.5px); }
+        .hero-circle { position: absolute; width: 550px; height: 550px; border: 1px solid rgba(255,255,255,0.06); border-radius: 50%; top: -90px; right: -150px; animation: slowRotate 40s linear infinite; }
+        @keyframes slowRotate { to { transform: rotate(360deg); } }
+        .hero-wave { position: absolute; left: 0; right: 0; bottom: -10vh; height: 38vh; background: radial-gradient(circle at 50% -20%, rgba(253,241,224,0.1), transparent 55%), linear-gradient(180deg, rgba(59,9,12,0.2) 0%, rgba(18,10,24,0.6) 50%, rgba(3,4,12,1) 100%); border-top-left-radius: 35% 60px; }
+
+        /* 3D canvas */
+        .canvas-stack { position: absolute; inset: 0; z-index: 0; }
+        #loop-canvas { width: 100%; height: 100%; display: block; opacity: 0.75; }
+
+        /* Wordmark */
+        .hero-wordmark { position: absolute; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; }
+        .hero-wordmark.hidden { opacity: 0; transform: scale(0.93) translateY(-14px); pointer-events: none; }
+        .hero-wordmark-text { font-family: "Syne", sans-serif; font-weight: 800; font-size: clamp(2.8rem, 8vw, 6.5rem); letter-spacing: 0.2em; color: var(--cream); text-transform: uppercase; text-shadow: 0 0 80px rgba(253,241,224,0.15); animation: wordmarkIn 1s cubic-bezier(0.4,0,0.2,1) both; }
+        @keyframes wordmarkIn {
+            from { opacity: 0; transform: scale(0.94) translateY(16px); letter-spacing: 0.35em; }
+            to   { opacity: 1; transform: scale(1) translateY(0); letter-spacing: 0.2em; }
         }
 
-        .hero-grad {
-            position: absolute;
-            inset: -20% auto auto -15%;
-            width: 180%;
-            height: 120%;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.65), rgba(60, 0, 0, 0.65));
-            transform: rotate(-6deg);
-            border-radius: 48%;
-            filter: blur(0.5px);
-        }
+        /* Panel layer */
+        .panel-layer { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; padding: 0 6vw; }
+        .panel { position: absolute; max-width: 560px; opacity: 0; transform: translateY(32px); transition: opacity 0.5s cubic-bezier(0.4,0,0.2,1), transform 0.5s cubic-bezier(0.4,0,0.2,1); pointer-events: none; }
+        .panel.active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+        .panel.exiting { opacity: 0; transform: translateY(-20px); transition: opacity 0.3s ease, transform 0.3s ease; }
 
-        .hero-circle {
-            position: absolute;
-            width: 550px;
-            height: 550px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 50%;
-            top: -90px;
-            right: -150px;
-        }
+        .hero-main-content { max-width: 520px; }
+        .hero-main-content h2 { font-family: "Syne", sans-serif; letter-spacing: -0.01em; margin-bottom: 0.6rem; color: #fff7ee; font-size: 1.5rem; }
+        .hero-main-content p { margin-bottom: 0.75rem; color: rgba(255,255,255,0.74); }
+        .panel-label { font-family: "DM Mono", monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 0.5rem; }
+        .panel-rule { margin: 0.75rem 0 1rem; border: none; height: 1px; border-radius: 4px; background: var(--panel-rule); opacity: 0.8; }
+        .hero-badges { display: inline-flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+        .hero-badges span { padding: 0.35rem 0.85rem; border: 1px solid rgba(255,255,255,0.18); font-family: "DM Mono", monospace; letter-spacing: 0.15em; font-size: 0.72rem; color: rgba(255,255,255,0.75); }
+        .hero-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+        .panel h2 { font-family: "Syne", sans-serif; font-size: clamp(1.6rem, 3vw, 2.4rem); letter-spacing: -0.02em; color: var(--cream); margin-bottom: 0.5rem; }
+        .panel p { color: rgba(255,255,255,0.72); line-height: 1.65; }
+        .metric-wrap { font-family: "Syne", sans-serif; font-size: clamp(3.5rem, 8vw, 6rem); font-weight: 800; color: var(--cream); display: flex; align-items: baseline; gap: 0.15em; line-height: 1; margin: 0.5rem 0 0.75rem; }
+        .metric-wrap span:last-child { font-size: 0.45em; opacity: 0.6; }
 
-        .hero-wave {
-            position: absolute;
-            left: 0;
-            right: 0;
-            bottom: -10vh;
-            height: 38vh;
-            background: radial-gradient(circle at 50% -20%, rgba(255, 255, 255, 0.15), transparent 45%),
-                        linear-gradient(180deg, transparent 0%, var(--star-field) 40%, #050205 100%);
-            border-top-left-radius: 35% 60px;
-            border-top-right-radius: 0;
-            box-shadow: inset 0 20px 80px rgba(0, 0, 0, 0.7);
-        }
+        /* Dots */
+        .panel-dots { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); display: flex; gap: 0.45rem; z-index: 10; }
+        .panel-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.2); transition: background 0.3s, transform 0.3s; }
+        .panel-dot.active { background: var(--cream); transform: scale(1.35); }
 
-        .sticky-stage {
-            width: min(1200px, 95vw);
+        /* Scroll hint */
+        .scroll-hint { position: absolute; bottom: 3.5rem; right: 2.5rem; font-family: "DM Mono", monospace; font-size: 0.65rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); display: flex; flex-direction: column; align-items: center; gap: 0.4rem; z-index: 10; animation: fadeInUp 1.5s 1.5s both; }
+        .scroll-hint::after { content: ""; display: block; width: 1px; height: 36px; background: linear-gradient(180deg, rgba(255,255,255,0.3), transparent); animation: scrollPulse 1.8s ease-in-out infinite; }
+        @keyframes scrollPulse { 0%,100% { opacity: 0.3; transform: scaleY(1); } 50% { opacity: 1; transform: scaleY(1.2); } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Buttons */
+        .cta-button { display: inline-block; font-family: "DM Mono", monospace; font-size: 0.78rem; letter-spacing: 0.1em; border-radius: 999px; padding: 0.85rem 2.2rem; text-decoration: none; transition: background 0.2s, transform 0.15s; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: var(--cream); }
+        .cta-button:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+        .cta-button.ghost { background: transparent; border-color: rgba(255,255,255,0.15); color: rgba(255,255,255,0.8); }
+
+        /* ── BELOW FOLD ── */
+        .page-content { background: var(--page-bg); }
+        .section { padding: 7rem 6vw; }
+
+        /* Build */
+        .build-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 4rem; max-width: 1200px; margin: 0 auto; align-items: start; }
+        .build-number { font-family: "Syne", sans-serif; font-size: 5rem; font-weight: 800; color: rgba(255,255,255,0.05); line-height: 1; margin-bottom: 0.5rem; }
+        .build-left h2 { font-family: "Syne", sans-serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem); color: var(--cream); line-height: 1.15; }
+        .build-right { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .build-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.5rem; border-radius: 4px; transition: background 0.25s; }
+        .build-card:hover { background: rgba(255,255,255,0.055); }
+        .build-card h3 { font-family: "Syne", sans-serif; font-size: 1rem; color: var(--cream); margin-bottom: 0.6rem; }
+        .build-card p { font-size: 0.88rem; color: rgba(255,255,255,0.5); line-height: 1.6; }
+
+        /* Divisions */
+        .section-divisions { display: flex; flex-direction: column; gap: 5rem; max-width: 1200px; margin: 0 auto; padding: 7rem 6vw; }
+        .division-row { display: flex; align-items: center; gap: 5rem; }
+        .division-row.reverse { flex-direction: row-reverse; }
+        .division-content { flex: 1; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 2.5rem; border-radius: 12px; }
+        .division-label { font-family: "DM Mono", monospace; font-size: 0.72rem; letter-spacing: 0.18em; color: rgba(255,255,255,0.3); margin-bottom: 0.75rem; }
+        .division-content h3 { font-family: "Syne", sans-serif; font-size: clamp(1.8rem, 3vw, 2.6rem); color: var(--cream); margin-bottom: 1rem; }
+        .division-content p { color: rgba(255,255,255,0.6); line-height: 1.7; margin-bottom: 1.5rem; font-size: 0.95rem; }
+
+        /* ── Möbius division visual ── */
+        .division-visual {
+            flex: none;
+            width: 280px;
+            height: 280px;
             position: relative;
-            z-index: 1;
-        }
-
-        .canvas-stack {
-            position: absolute;
-            inset: 0;
-            z-index: -1;
+            border-radius: 12px;
             overflow: hidden;
-            border-radius: 36px;
-            filter: drop-shadow(0 25px 60px rgba(0, 0, 0, 0.65));
+            background: rgba(10, 2, 2, 0.95);
+            border: 1px solid rgba(139, 0, 0, 0.18);
         }
 
-        .loop-canvas {
+        #mini-mobius-canvas {
+            display: block;
             width: 100%;
             height: 100%;
-            display: block;
         }
 
-        .panel-layer {
-            background: transparent;
+        /* Subtle corner brackets on the mobius card */
+        .division-visual::before,
+        .division-visual::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .division-visual::before {
+            top: 10px;
+            left: 10px;
+            border-top: 1px solid rgba(198, 167, 94, 0.4);
+            border-left: 1px solid rgba(198, 167, 94, 0.4);
+        }
+        .division-visual::after {
+            bottom: 10px;
+            right: 10px;
+            border-bottom: 1px solid rgba(198, 167, 94, 0.4);
+            border-right: 1px solid rgba(198, 167, 94, 0.4);
         }
 
-        .panel {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-        }
+        /* Division 2 visual (rotating square, unchanged) */
+        .shape-card { width: 260px; height: 260px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .rotating-square { width: 90px; height: 90px; border: 1.5px solid rgba(253,241,224,0.35); animation: spin45 6s linear infinite; }
+        @keyframes spin45 { to { transform: rotate(360deg); } }
 
-        .hero-intro h1 {
-            font-family: "Syne", sans-serif;
-            font-size: clamp(3rem, 6vw, 4.8rem);
-            letter-spacing: -0.02em;
-            margin-bottom: 1rem;
-            color: #fdf1e0;
-        }
+        /* Vision */
+        .section-vision { max-width: 900px; margin: 0 auto; padding: 7rem 6vw; text-align: center; position: relative; }
+        .vision-ghost { position: absolute; top: 4rem; left: 50%; transform: translateX(-50%); font-family: "Syne", sans-serif; font-size: 18rem; font-weight: 800; color: rgba(255,255,255,0.02); pointer-events: none; white-space: nowrap; line-height: 1; }
+        .section-vision h2 { font-family: "Syne", sans-serif; font-size: clamp(2.2rem, 5vw, 4rem); color: var(--cream); line-height: 1.1; margin-bottom: 1.25rem; position: relative; }
+        .section-vision > p { color: rgba(255,255,255,0.5); font-size: 1rem; line-height: 1.7; max-width: 550px; margin: 0 auto 3rem; position: relative; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-top: 2rem; position: relative; }
+        .stat-box { padding: 2rem 1rem; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); }
+        .stat-num { font-family: "Syne", sans-serif; font-size: 2.8rem; font-weight: 800; color: var(--cream); margin-bottom: 0.4rem; }
+        .stat-label { font-family: "DM Mono", monospace; font-size: 0.7rem; letter-spacing: 0.12em; color: rgba(255,255,255,0.3); text-transform: uppercase; }
 
-        .hero-main-content {
-            max-width: 520px;
-            color: rgba(255, 255, 255, 0.76);
-        }
+        /* Footer CTA */
+        .section-footer-cta { padding: 7rem 6vw; }
+        .footer-cta-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+        .footer-cta-inner h2 { font-family: "Syne", sans-serif; font-size: clamp(2rem,5vw,4rem); color: var(--cream); margin-bottom: 1rem; }
+        .footer-cta-inner > p { color: rgba(255,255,255,0.5); margin-bottom: 2rem; }
+        .service-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3.5rem; text-align: left; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 2.5rem; }
+        .service-columns h3 { font-family: "DM Mono", monospace; font-size: 0.72rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.35); margin-bottom: 0.75rem; }
+        .service-columns p { font-size: 0.88rem; color: rgba(255,255,255,0.45); line-height: 2; }
+        .bottom-strip { margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.05); font-family: "DM Mono", monospace; font-size: 0.65rem; letter-spacing: 0.18em; color: rgba(255,255,255,0.18); }
 
-        .hero-main-content h2 {
-            font-family: "Syne", sans-serif;
-            letter-spacing: -0.01em;
-            margin-bottom: 0.6rem;
-            color: #fff7ee;
-        }
+        /* Reveal */
+        .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s cubic-bezier(0.4,0,0.2,1), transform 0.65s cubic-bezier(0.4,0,0.2,1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
 
-        .hero-main-content p {
-            margin-bottom: 0.75rem;
-            color: rgba(255, 255, 255, 0.74);
-        }
-
-        .hero-badges {
-            display: inline-flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            flex-wrap: wrap;
-        }
-
-        .hero-badges span {
-            border: 1px solid rgba(255, 255, 255, 0.35);
-            padding: 0.35rem 0.85rem;
-            font-family: "DM Mono", monospace;
-            letter-spacing: 0.15em;
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        .cta-button,
-        .cta-button.ghost {
-            font-family: "DM Mono", monospace;
-            letter-spacing: 0.1em;
-            border-radius: 999px;
-            padding: 0.85rem 2.5rem;
-        }
-
-        .cta-button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            color: #fdf1e0;
-        }
-
-        .cta-button.ghost {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: rgba(255, 255, 255, 0.85);
-        }
-
-        /* Keep Affinity Star visuals unchanged */
-        #division-ai {
-            background: transparent;
-            border: none;
-            box-shadow: none;
-        }
-
-        #division-ai .division-label {
-            letter-spacing: 0.1em;
-        }
-
-        .division-visual .shape-card {
-            background: linear-gradient(150deg, rgba(12, 8, 10, 0.9), rgba(6, 4, 5, 0.92));
+        @media (max-width: 768px) {
+            .build-layout { grid-template-columns: 1fr; gap: 2rem; }
+            .build-right { grid-template-columns: 1fr; }
+            .division-row, .division-row.reverse { flex-direction: column; gap: 2rem; }
+            .division-visual { flex: none; width: 100%; height: 260px; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .service-columns { grid-template-columns: 1fr; }
+            .panel-layer { padding: 0 5vw; }
         }
     </style>
 </head>
@@ -194,29 +230,31 @@
         <div class="nav-links">
             <a href="pages/ai.html">AI</a>
             <span aria-hidden="true">·</span>
-            <a href="pages/photos.html">PHOTOS</a>
+            <a href="https://cianjoseph.com/home" target="_blank" rel="noreferrer noopener">STAR</a>
         </div>
     </nav>
 
     <main>
         <section class="scroll-shell" id="hero">
-            <div class="hero-visuals" aria-hidden="true">
-                <div class="hero-grad"></div>
-                <div class="hero-circle"></div>
-                <div class="hero-wave"></div>
-            </div>
-            <div class="sticky-stage">
+            <div class="scroll-shell-sticky">
+                <div class="hero-visuals" aria-hidden="true">
+                    <div class="hero-grad"></div>
+                    <div class="hero-circle"></div>
+                    <div class="hero-wave"></div>
+                </div>
+
                 <div class="canvas-stack">
-                    <canvas id="loop-canvas" class="loop-canvas" aria-label="3D affinity loop"></canvas>
+                    <canvas id="loop-canvas" aria-label="3D affinity loop"></canvas>
+                </div>
+
+                <div class="hero-wordmark" id="hero-wordmark" aria-hidden="true">
+                    <span class="hero-wordmark-text">AFFINITY</span>
                 </div>
 
                 <div class="panel-layer" id="panel-layer">
                     <article class="panel" data-panel-index="0">
-                        <div class="hero-intro">
-                            <h1 class="glitch-target">Affinity AI</h1>
-                        </div>
                         <div class="hero-main-content">
-                            <p class="panel-label">Affinity AI</p>
+                            <p class="panel-label">Affinity</p>
                             <h2>Intelligence Designed For Scale</h2>
                             <hr class="panel-rule">
                             <p>We architect custom AI systems, automation pipelines, and agent-driven workflows that remove bottlenecks and unlock faster execution.</p>
@@ -225,9 +263,9 @@
                                 <span>AGENTS</span>
                                 <span>AUTOMATION</span>
                             </div>
-                            <div style="margin-top: 1.2rem; display: flex; gap: 0.6rem; flex-wrap: wrap;">
+                            <div class="hero-actions">
                                 <a class="cta-button" href="pages/ai.html">Explore Affinity AI →</a>
-                                <a class="cta-button ghost" href="pages/photos.html">See Affinity Photos</a>
+                                <a class="cta-button ghost" href="https://cianjoseph.com/home">See Affinity Star</a>
                             </div>
                         </div>
                     </article>
@@ -240,7 +278,7 @@
                     </article>
 
                     <article class="panel" data-panel-index="2">
-                        <p class="panel-label">Affinity Photos</p>
+                        <p class="panel-label">Affinity Star</p>
                         <h2>Marketing That Converts Attention</h2>
                         <hr class="panel-rule">
                         <p>SEO, paid campaigns, and premium visual production combine into one growth layer to increase visibility and demand.</p>
@@ -250,7 +288,9 @@
                         <p class="panel-label">Execution</p>
                         <h2>Automation Coverage Target</h2>
                         <hr class="panel-rule">
-                        <p class="metric-wrap"><span id="coverage-counter">0</span><span>%</span></p>
+                        <p class="metric-wrap">
+                            <span id="coverage-counter">0</span><span>%</span>
+                        </p>
                         <p>Integrated operations are designed to reach high process coverage quickly while preserving quality and brand consistency.</p>
                     </article>
 
@@ -261,67 +301,70 @@
                         <p>Backend intelligence and front-end brand growth run in parallel, creating a loop of continuous optimization and scale.</p>
                     </article>
                 </div>
+
+                <div class="panel-dots" aria-hidden="true" id="panel-dots"></div>
+                <div class="scroll-hint" aria-hidden="true">SCROLL</div>
             </div>
         </section>
 
-        <section class="section section-build" id="what-we-build">
-            <div class="build-layout">
-                <div class="build-left">
-                    <p class="build-number">02</p>
-                    <h2>Two Divisions.<br>One Mission.</h2>
+        <div class="page-content">
+            <section class="section section-build" id="what-we-build">
+                <div class="build-layout">
+                    <div class="build-left">
+                        <p class="build-number">02</p>
+                        <h2>Two Divisions.<br>One Mission.</h2>
+                    </div>
+                    <div class="build-right">
+                        <article class="build-card reveal">
+                            <h3>Custom AI Systems</h3>
+                            <p>We design and deploy AI tailored to your exact operations — not off-the-shelf tools, but systems built around your workflow.</p>
+                        </article>
+                        <article class="build-card reveal">
+                            <h3>Automation Pipelines</h3>
+                            <p>End-to-end process automation that eliminates manual work and creates compounding efficiency gains over time.</p>
+                        </article>
+                        <article class="build-card reveal">
+                            <h3>RAG Architectures</h3>
+                            <p>Retrieval-augmented systems that give your business a knowledge layer — query your own data with AI precision.</p>
+                        </article>
+                        <article class="build-card reveal">
+                            <h3>Brand &amp; Growth</h3>
+                            <p>From SEO to event photography to paid campaigns, Affinity Star handles the brand presence that converts attention into revenue.</p>
+                        </article>
+                    </div>
                 </div>
-                <div class="build-right">
-                    <article class="build-card reveal">
-                        <h3>Custom AI Systems</h3>
-                        <p>We design and deploy AI tailored to your exact operations - not off-the-shelf tools, but systems built around your workflow.</p>
-                    </article>
-                    <article class="build-card reveal">
-                        <h3>Automation Pipelines</h3>
-                        <p>End-to-end process automation that eliminates manual work and creates compounding efficiency gains over time.</p>
-                    </article>
-                    <article class="build-card reveal">
-                        <h3>RAG Architectures</h3>
-                        <p>Retrieval-augmented systems that give your business a knowledge layer - query your own data with AI precision.</p>
-                    </article>
-                    <article class="build-card reveal">
-                        <h3>Brand &amp; Growth</h3>
-                        <p>From SEO to event photography to paid campaigns, Affinity Photos handles the brand presence that converts attention into revenue.</p>
-                    </article>
-                </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="section section-divisions" id="divisions">
-            <div class="division-row reveal" id="division-ai">
-                <div class="division-visual division-visual-knot">
-                    <canvas id="mini-knot-canvas" width="300" height="300" aria-label="rotating affinity knot"></canvas>
+            <section class="section-divisions" id="divisions">
+                <!-- Division 01 — Affinity AI with Möbius strip -->
+                <div class="division-row reveal" id="division-ai">
+                    <div class="division-visual" aria-label="Affinity AI Möbius visualization">
+                        <canvas id="mini-mobius-canvas"></canvas>
+                    </div>
+                    <div class="division-content">
+                        <p class="division-label">// division 01</p>
+                        <h3>Affinity AI</h3>
+                        <p>Custom artificial intelligence systems, automation pipelines, AI agents, and RAG-based information systems built for businesses that need to move faster.</p>
+                        <a class="cta-button" href="pages/ai.html">Explore AI →</a>
+                    </div>
                 </div>
-                <div class="division-content">
-                    <p class="division-label">// division 01</p>
-                    <h3>Affinity AI</h3>
-                    <p>Custom artificial intelligence systems, automation pipelines, AI agents, and RAG-based information systems built for businesses that need to move faster.</p>
-                    <a class="cta-button" href="pages/ai.html">Explore AI →</a>
-                </div>
-            </div>
 
-            <div class="division-row reverse reveal">
-                <div class="division-content">
-                    <p class="division-label">// division 02</p>
-                    <h3>Affinity Photos</h3>
-                    <p>Brand marketing through SEO optimization, professional event photography, and paid advertising campaigns - the presence that makes your business visible.</p>
-                    <a class="cta-button" href="pages/photos.html">Explore Photos →</a>
-                </div>
-                <div class="division-visual">
-                    <div class="shape-card">
+                <!-- Division 02 — Affinity Star -->
+                <div class="division-row reverse reveal">
+                    <div class="division-content">
+                        <p class="division-label">// division 02</p>
+                        <h3>Affinity Star</h3>
+                        <p>Brand marketing through SEO optimization, professional event photography, and paid advertising campaigns — the presence that makes your business visible.</p>
+                        <a class="cta-button" href="https://cianjoseph.com/home">Explore Star →</a>
+                    </div>
+                    <div class="division-visual" style="display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
                         <div class="rotating-square" aria-hidden="true"></div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="section section-vision" id="vision">
-            <div class="vision-inner">
-                <p class="vision-ghost">001</p>
+            <section class="section-vision" id="vision">
+                <div class="vision-ghost" aria-hidden="true">001</div>
                 <h2 class="reveal">Pre-Revenue.<br>Full Momentum.</h2>
                 <p>Affinity is actively acquiring its first clients and building foundational infrastructure. Early clients receive direct founder attention and preferred pricing locked in for life.</p>
                 <div class="stats-grid">
@@ -338,32 +381,428 @@
                         <p class="stat-label">Founding Client Cohort</p>
                     </article>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="section section-footer-cta" id="ready">
-            <div class="footer-cta-inner">
-                <h2 class="reveal">Ready to Build?</h2>
-                <p>Join the first wave of businesses running on Affinity infrastructure.</p>
-                <a class="cta-button" href="pages/ai.html">Start With Affinity</a>
-
-                <div class="service-columns">
-                    <div>
-                        <h3>AFFINITY AI</h3>
-                        <p>Custom AI Systems<br>Automation Pipelines<br>AI Agents<br>RAG Information Layers</p>
+            <section class="section-footer-cta" id="ready">
+                <div class="footer-cta-inner">
+                    <h2 class="reveal">Ready to Build?</h2>
+                    <p>Join the first wave of businesses running on Affinity infrastructure.</p>
+                    <a class="cta-button" href="pages/ai.html">Start With Affinity</a>
+                    <div class="service-columns">
+                        <div>
+                            <h3>AFFINITY AI</h3>
+                            <p>Custom AI Systems<br>Automation Pipelines<br>AI Agents<br>RAG Information Layers</p>
+                        </div>
+                        <div>
+                            <h3>AFFINITY STAR</h3>
+                            <p>SEO Optimization<br>Event Photography<br>Paid Campaigns<br>Brand Visibility</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3>AFFINITY PHOTOS</h3>
-                        <p>SEO Optimization<br>Event Photography<br>Paid Campaigns<br>Brand Visibility</p>
-                    </div>
+                    <div class="bottom-strip">© 2024 AFFINITY · ALL RIGHTS RESERVED</div>
                 </div>
-
-                <div class="bottom-strip">© 2024 AFFINITY · ALL RIGHTS RESERVED</div>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script type="module" src="js/main.js"></script>
+    <script>
+    // ─────────────────────────────────────────────────────────────────
+    //  SCROLL TIMING CONSTANTS
+    // ─────────────────────────────────────────────────────────────────
+    const WORDMARK_VH  = 60;
+    const PANEL_VH     = 60;
+    const PANEL_COUNT  = 5;
+
+    const PANELS     = [...document.querySelectorAll('.panel')];
+    const wordmark   = document.getElementById('hero-wordmark');
+    const dotsWrap   = document.getElementById('panel-dots');
+    const progressEl = document.getElementById('scroll-progress');
+
+    let currentPanel = -1;
+    let counterDone  = false;
+
+    // Build dots
+    PANELS.forEach(() => {
+        const d = document.createElement('span');
+        d.className = 'panel-dot';
+        dotsWrap.appendChild(d);
+    });
+    const DOTS = [...dotsWrap.querySelectorAll('.panel-dot')];
+
+    function showPanel(index) {
+        if (index === currentPanel) return;
+        if (currentPanel >= 0 && currentPanel < PANEL_COUNT) {
+            PANELS[currentPanel].classList.remove('active');
+            PANELS[currentPanel].classList.add('exiting');
+            const prev = currentPanel;
+            setTimeout(() => PANELS[prev] && PANELS[prev].classList.remove('exiting'), 350);
+        }
+        currentPanel = index;
+        if (index >= 0 && index < PANEL_COUNT) {
+            PANELS[index].classList.add('active');
+            DOTS.forEach((d, i) => d.classList.toggle('active', i === index));
+            if (index === 3 && !counterDone) { counterDone = true; animateCounter(); }
+        } else {
+            PANELS.forEach(p => p.classList.remove('active', 'exiting'));
+            DOTS.forEach(d => d.classList.remove('active'));
+        }
+    }
+
+    function animateCounter() {
+        const el = document.getElementById('coverage-counter');
+        if (!el) return;
+        const target = 85, duration = 1400;
+        const start = performance.now();
+        (function step(ts) {
+            const t = Math.min((ts - start) / duration, 1);
+            el.textContent = Math.round((1 - Math.pow(1 - t, 3)) * target);
+            if (t < 1) requestAnimationFrame(step);
+        })(performance.now());
+    }
+
+    function clamp(value, min, max) {
+        return Math.min(Math.max(value, min), max);
+    }
+
+    function onScroll() {
+        const pageMax = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+        progressEl.style.width = (window.scrollY / pageMax * 100) + '%';
+
+        const shell      = document.getElementById('hero');
+        const scrolledPx = -shell.getBoundingClientRect().top;
+        const shellRange = shell.offsetHeight - window.innerHeight;
+
+        if (scrolledPx <= 0) {
+            wordmark.classList.remove('hidden');
+            wordmark.style.opacity   = '';
+            wordmark.style.transform = '';
+            if (currentPanel !== -1) showPanel(-1);
+            return;
+        }
+        if (scrolledPx >= shellRange) return;
+
+        const scrolledVh = scrolledPx * 100 / window.innerHeight;
+
+        if (scrolledVh < WORDMARK_VH) {
+            const t = scrolledVh / WORDMARK_VH;
+            wordmark.style.opacity   = String(1 - t * 0.2);
+            wordmark.style.transform = `scale(${1 - t * 0.035}) translateY(${-t * 12}px)`;
+            wordmark.classList.remove('hidden');
+            if (currentPanel >= 0) showPanel(-1);
+        } else {
+            wordmark.classList.add('hidden');
+            wordmark.style.opacity   = '';
+            wordmark.style.transform = '';
+            const panelVh = scrolledVh - WORDMARK_VH;
+            const index   = Math.min(Math.floor(panelVh / PANEL_VH), PANEL_COUNT - 1);
+            showPanel(index);
+        }
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // ── Reveal on scroll (below fold) ────────────────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+            if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); }
+        });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // ── 3D Torus Knot — hero ─────────────────────────────────────────
+    (function() {
+        const canvas = document.getElementById('loop-canvas');
+        if (!canvas || typeof THREE === 'undefined') return;
+        const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        const scene  = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+        camera.position.set(0, 0, 5.5);
+        const geo  = new THREE.TorusKnotGeometry(1.4, 0.36, 180, 20, 2, 3);
+        const knot = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0x8b0000, roughness: 0.45, metalness: 0.7, emissive: 0x1a0000, emissiveIntensity: 0.4 }));
+        scene.add(knot);
+        scene.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color: 0xfdf1e0, wireframe: true, transparent: true, opacity: 0.04 })));
+        scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+        const kl = new THREE.DirectionalLight(0xffeedd, 1.6); kl.position.set(3,5,4); scene.add(kl);
+        const fl = new THREE.DirectionalLight(0x3b0909, 0.9); fl.position.set(-4,-2,-3); scene.add(fl);
+        const rl = new THREE.PointLight(0xffeedd, 0.6, 15); rl.position.set(0,3,-3); scene.add(rl);
+        function resize() { const w=canvas.clientWidth,h=canvas.clientHeight; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); }
+        window.addEventListener('resize', resize); resize();
+        let t=0; (function animate(){ requestAnimationFrame(animate); t+=0.004; knot.rotation.x=t*0.55; knot.rotation.y=t*0.85; renderer.render(scene,camera); })();
+    })();
+
+    // ── Möbius Strip — Division AI card ──────────────────────────────
+    (function() {
+        const canvas = document.getElementById('mini-mobius-canvas');
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        const container = canvas.parentElement;
+        const renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance'
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 3));
+        renderer.setClearColor(0x0a0202, 1);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.1;
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(36, 1, 0.01, 100);
+        camera.position.set(0, 2.2, 6.8);
+
+        function resize() {
+            const rect = container.getBoundingClientRect();
+            const w = Math.max(rect.width, 1);
+            const h = Math.max(rect.height, 1);
+            renderer.setSize(w, h, false);
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+        window.addEventListener('resize', resize);
+        resize();
+        setTimeout(resize, 160);
+        window.addEventListener('load', resize);
+
+        const R_MAJ = 1.9;
+        const R_WID = 0.50;
+        function mobiusPt(u, v) {
+            const cu = Math.cos(u), su = Math.sin(u);
+            const chu = Math.cos(u * 0.5), shu = Math.sin(u * 0.5);
+            return new THREE.Vector3(
+                (R_MAJ + R_WID * v * chu) * cu,
+                (R_MAJ + R_WID * v * chu) * su,
+                R_WID * v * shu
+            );
+        }
+
+        const root = new THREE.Group();
+        root.rotation.x = 0.5;
+        root.rotation.z = 0.1;
+        scene.add(root);
+
+        // Ribbon with grid shader
+        const ribbonMat = new THREE.ShaderMaterial({
+            transparent: true,
+            depthWrite: false,
+            side: THREE.DoubleSide,
+            blending: THREE.NormalBlending,
+            uniforms: {
+                uTime: { value: 0 },
+                uCamPos: { value: camera.position }
+            },
+            vertexShader: `
+                varying vec3 vNormal;
+                varying vec3 vWorldPos;
+                varying vec2 vUV;
+                void main() {
+                    vNormal   = normalize(normalMatrix * normal);
+                    vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+                    vUV       = uv;
+                    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+                }
+            `,
+            fragmentShader: `
+                uniform float uTime;
+                uniform vec3  uCamPos;
+                varying vec3  vNormal;
+                varying vec3  vWorldPos;
+                varying vec2  vUV;
+                void main() {
+                    vec3  V    = normalize(uCamPos - vWorldPos);
+                    vec3  N    = normalize(vNormal);
+                    float cosA = abs(dot(N, V));
+                    vec2 uv = vUV * vec2(160.0, 70.0);
+                    float s = 0.7071;
+                    vec2 uvDia = vec2(uv.x * s - uv.y * s, uv.x * s + uv.y * s);
+                    vec2  cell   = fract(uvDia);
+                    float lineX  = min(cell.x, 1.0 - cell.x);
+                    float lineY  = min(cell.y, 1.0 - cell.y);
+                    float minDist = min(lineX, lineY);
+                    float line = 1.0 - smoothstep(0.0, 0.06, minDist);
+                    float sheen = pow(1.0 - cosA, 2.2);
+                    float edgeV = pow(abs(vUV.y * 2.0 - 1.0), 2.0);
+                    vec3 bgCol   = vec3(0.10, 0.015, 0.010);
+                    vec3 lineCol = mix(vec3(0.65, 0.08, 0.03), vec3(0.90, 0.22, 0.06), sheen * 0.8);
+                    lineCol = mix(lineCol, vec3(0.85, 0.15, 0.04), edgeV * 0.5);
+                    vec3 col = mix(bgCol, lineCol, line);
+                    float alpha = mix(0.82, 1.0, line);
+                    alpha = clamp(alpha + edgeV * 0.15, 0.0, 1.0);
+                    gl_FragColor = vec4(col, alpha);
+                }
+            `
+        });
+
+        // Ribbon geometry
+        {
+            const NU = 600, NV = 60;
+            const pos = [], uvs = [], idx = [];
+            for (let i = 0; i <= NU; i++) {
+                const u = (i / NU) * Math.PI * 2;
+                for (let j = 0; j <= NV; j++) {
+                    const v = (j / NV) * 2 - 1;
+                    const p = mobiusPt(u, v);
+                    pos.push(p.x, p.y, p.z);
+                    uvs.push(i / NU, j / NV);
+                }
+            }
+            for (let i = 0; i < NU; i++) {
+                for (let j = 0; j < NV; j++) {
+                    const a = i * (NV + 1) + j, b = (i + 1) * (NV + 1) + j;
+                    idx.push(a, b, a + 1, b, b + 1, a + 1);
+                }
+            }
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+            geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+            geo.setIndex(idx);
+            geo.computeVertexNormals();
+            root.add(new THREE.Mesh(geo, ribbonMat));
+        }
+
+        // Edge lines
+        function makeLine(vVal, color, opacity, segments = 1200) {
+            const pts = [];
+            for (let i = 0; i <= segments; i++) {
+                pts.push(mobiusPt((i / segments) * Math.PI * 4, vVal));
+            }
+            const geo = new THREE.BufferGeometry().setFromPoints(pts);
+            const mat = new THREE.LineBasicMaterial({ color, transparent: true, opacity, linewidth: 1 });
+            return new THREE.Line(geo, mat);
+        }
+        root.add(makeLine(1.0, 0x8b0000, 1.0));
+        root.add(makeLine(-1.0, 0x8b0000, 1.0));
+        root.add(makeLine(1.0, 0xc6a75e, 0.35));
+        root.add(makeLine(-1.0, 0xc6a75e, 0.35));
+        root.add(makeLine(0.5, 0x5a0000, 0.3));
+        root.add(makeLine(-0.5, 0x5a0000, 0.3));
+        root.add(makeLine(0.0, 0xb8933a, 0.5));
+
+        // Longitudinal lines
+        {
+            const N_LONG = 16;
+            const mat = new THREE.LineBasicMaterial({ color: 0x3a0000, transparent: true, opacity: 0.35 });
+            for (let j = 0; j <= N_LONG; j++) {
+                const v = (j / N_LONG) * 2 - 1;
+                const pts = [];
+                for (let i = 0; i <= 800; i++) {
+                    pts.push(mobiusPt((i / 800) * Math.PI * 4, v));
+                }
+                const geo = new THREE.BufferGeometry().setFromPoints(pts);
+                root.add(new THREE.Line(geo, mat));
+            }
+        }
+
+        // Glow sprite helper
+        function makeGlowSprite(r, g, b, size = 256) {
+            const c = document.createElement('canvas');
+            c.width = c.height = size;
+            const ctx = c.getContext('2d');
+            const cx = size / 2;
+            const grad = ctx.createRadialGradient(cx, cx, 0, cx, cx, cx);
+            grad.addColorStop(0, `rgba(255,255,255,1)`);
+            grad.addColorStop(0.04, `rgba(${r},${g},${b},1)`);
+            grad.addColorStop(0.12, `rgba(${r},${g},${b},0.6)`);
+            grad.addColorStop(0.25, `rgba(${r},${g},${b},0.15)`);
+            grad.addColorStop(1, `rgba(0,0,0,0)`);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, size, size);
+            return new THREE.CanvasTexture(c);
+        }
+
+        // Particle streams
+        const STREAMS = [
+            { v: 0.0,   speed: 0.30, len: 380, size: 0.20, r: 255, g: 200, b: 120 },
+            { v: 0.5,   speed: 0.22, len: 300, size: 0.14, r: 200, g: 60,  b: 20  },
+            { v: -0.5,  speed: 0.38, len: 260, size: 0.12, r: 198, g: 167, b: 94  },
+            { v: 0.85,  speed: 0.18, len: 200, size: 0.10, r: 160, g: 30,  b: 10  },
+            { v: -0.85, speed: 0.28, len: 220, size: 0.11, r: 220, g: 150, b: 60  },
+            { v: 0.25,  speed: 0.44, len: 180, size: 0.08, r: 255, g: 220, b: 180 }
+        ];
+
+        const streamObjs = STREAMS.map(function(s, si) {
+            const TLEN = s.len;
+            const pos = new Float32Array(TLEN * 3);
+            const col = new Float32Array(TLEN * 3);
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+            geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+            const mat = new THREE.PointsMaterial({
+                size: s.size,
+                vertexColors: true,
+                map: makeGlowSprite(s.r, s.g, s.b),
+                transparent: true,
+                opacity: 1,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending,
+                sizeAttenuation: true
+            });
+            const pts = new THREE.Points(geo, mat);
+            root.add(pts);
+            const history = Array.from({ length: TLEN }, () => new THREE.Vector3());
+            return { ...s, geo, pos, col, mat, pts, history, head: 0, phase: si / STREAMS.length };
+        });
+
+        // Ambient halo
+        {
+            const haloTex = makeGlowSprite(120, 20, 10, 512);
+            const haloMat = new THREE.SpriteMaterial({
+                map: haloTex,
+                transparent: true,
+                opacity: 0.12,
+                blending: THREE.AdditiveBlending,
+                depthWrite: false
+            });
+            const halo = new THREE.Sprite(haloMat);
+            halo.scale.set(9, 9, 1);
+            scene.add(halo);
+        }
+
+        let t0 = null, prevTs = null;
+        function animate(ts) {
+            requestAnimationFrame(animate);
+            if (!t0) t0 = ts;
+            if (!prevTs) prevTs = ts;
+            const t = (ts - t0) * 0.001;
+            const delta = Math.min(ts - prevTs, 50) * 0.001;
+            prevTs = ts;
+
+            ribbonMat.uniforms.uTime.value = t;
+            ribbonMat.uniforms.uCamPos.value.copy(camera.position);
+
+            root.rotation.x += 0.35 * delta;
+            root.rotation.y += 0.08 * delta;
+
+            camera.position.set(0, 2.2, 6.8);
+            camera.lookAt(0, 0, 0);
+
+            streamObjs.forEach(function(s, si) {
+                s.phase = (s.phase + s.speed * 0.016) % 1;
+                const u = s.phase * Math.PI * 4;
+                const pt = mobiusPt(u, s.v);
+                s.history[s.head].copy(pt);
+                s.head = (s.head + 1) % s.history.length;
+                const TLEN = s.history.length;
+                for (let i = 0; i < TLEN; i++) {
+                    const age = ((s.head - i - 1 + TLEN) % TLEN) / TLEN;
+                    const fade = Math.pow(1.0 - age, 4.5);
+                    const h = s.history[(s.head - i - 1 + TLEN) % TLEN];
+                    s.pos[i * 3] = h.x; s.pos[i * 3 + 1] = h.y; s.pos[i * 3 + 2] = h.z;
+                    s.col[i * 3]     = (s.r / 255) * fade;
+                    s.col[i * 3 + 1] = (s.g / 255) * fade;
+                    s.col[i * 3 + 2] = (s.b / 255) * fade;
+                }
+                s.geo.attributes.position.needsUpdate = true;
+                s.geo.attributes.color.needsUpdate = true;
+                s.mat.size = s.size * (0.88 + Math.sin(t * 4.5 + si) * 0.12);
+            });
+
+            renderer.render(scene, camera);
+        }
+        requestAnimationFrame(animate);
+    })();
+    </script>
 </body>
 </html>
