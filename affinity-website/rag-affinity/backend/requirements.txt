@@ -1,0 +1,10 @@
+fastapi
+uvicorn[standard]
+anthropic
+pinecone
+fastembed
+langchain-text-splitters
+pymupdf
+python-multipart
+python-dotenv
+httpx
