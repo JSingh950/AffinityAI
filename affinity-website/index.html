@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Affinity</title>
-    <meta name="description" content="Affinity is a dual-sector technology and marketing firm.">
+    <title>Affinity | AI Automation, Data-Driven Marketing & Business Growth</title>
+    <meta name="description" content="Affinity helps businesses grow with cutting-edge AI tools, intelligent automation, and data-driven marketing strategies. Stay ahead with Affinity AI and Affinity Star.">
+    <meta name="keywords" content="AI automation, business growth, data-driven marketing, AI tools, brand visibility, marketing strategy, small business AI, Affinity AI, Affinity Star">
+    <meta property="og:title" content="Affinity | AI Automation, Data-Driven Marketing & Business Growth">
+    <meta property="og:description" content="Affinity helps businesses grow with cutting-edge AI tools, intelligent automation, and data-driven marketing strategies.">
+    <meta property="og:type" content="website">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
@@ -157,6 +161,12 @@
             height: 100%;
         }
 
+        #mini-star-canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
         /* Subtle corner brackets on the mobius card */
         .division-visual::before,
         .division-visual::after {
@@ -210,8 +220,8 @@
         .team-label { font-family: "DM Mono", monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 1rem; }
         .team-head { font-family: "Syne", sans-serif; font-size: clamp(2rem, 4vw, 3.2rem); color: var(--cream); margin-bottom: 3rem; line-height: 1.1; }
         .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .team-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.75rem 2rem; border-radius: 4px; transition: background 0.25s; }
-        .team-card:hover { background: rgba(255,255,255,0.055); }
+        .team-card { display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.75rem 2rem; border-radius: 4px; transition: background 0.25s, border-color 0.25s; }
+        .team-card:hover { background: rgba(255,255,255,0.055); border-color: rgba(198,167,94,0.35); }
         .team-card-name { font-family: "Syne", sans-serif; font-size: 1.05rem; color: var(--cream); margin-bottom: 0.4rem; }
         .team-card-role { font-family: "DM Mono", monospace; font-size: 0.68rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); text-transform: uppercase; }
 
@@ -316,7 +326,7 @@
         </section>
 
         <div class="page-content">
-            <section class="section section-build" id="what-we-build">
+            <section class="section section-build" id="what-we-build" aria-label="Affinity services and capabilities">
                 <div class="build-layout">
                     <div class="build-left">
                         <p class="build-number">02</p>
@@ -325,19 +335,19 @@
                     <div class="build-right">
                         <article class="build-card reveal">
                             <h3>AI Landscape Updates</h3>
-                            <p>We monitor and deploy the latest AI tools the moment they matter — your business never falls behind while competitors scramble to catch up.</p>
+                            <p>We monitor and deploy the latest AI automation tools the moment they matter — keeping your business efficient and ahead while competitors scramble to catch up.</p>
                         </article>
                         <article class="build-card reveal">
                             <h3>Compete at Any Scale</h3>
-                            <p>Level the playing field against well-funded industry giants with systems that punch far above their weight class.</p>
+                            <p>Give small and mid-size businesses a competitive advantage with scalable AI systems that punch far above their weight class against well-funded industry giants.</p>
                         </article>
                         <article class="build-card reveal">
                             <h3>Data-Driven Marketing</h3>
-                            <p>Affinity Star uses live promotional trend data from our AI backend to keep your brand visible exactly where it matters most.</p>
+                            <p>Affinity Star uses real-time promotional trend data and AI-powered marketing insights to maximize brand visibility and reach your audience exactly where it matters most.</p>
                         </article>
                         <article class="build-card reveal">
                             <h3>Front-End Relevance</h3>
-                            <p>From social media to live events and pro photography, Affinity Star keeps your brand sharp, consistent, and top of mind.</p>
+                            <p>From social media management and content marketing to live events and professional photography, Affinity Star keeps your brand identity sharp, consistent, and top of mind.</p>
                         </article>
                     </div>
                 </div>
@@ -365,8 +375,8 @@
                         <p>Affinity Star keeps your brand relevant on the front end — inspired by real promotional trend data tracked by Affinity AI's backend, so every campaign stays ahead of the curve and in front of the right audience.</p>
                         <a class="cta-button" href="pages/photos.html">Explore Star →</a>
                     </div>
-                    <div class="division-visual" style="display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
-                        <div class="rotating-square" aria-hidden="true"></div>
+                    <div class="division-visual" aria-label="Affinity Star visualization" style="position:relative;overflow:hidden;">
+                        <canvas id="mini-star-canvas"></canvas>
                     </div>
                 </div>
             </section>
@@ -396,30 +406,30 @@
                     <p class="team-label reveal">// the team</p>
                     <h2 class="team-head reveal">The People<br>Behind Affinity.</h2>
                     <div class="team-grid">
-                        <article class="team-card reveal">
+                        <a class="team-card reveal" href="https://www.linkedin.com/in/cian-joseph/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
                             <p class="team-card-name">Cian Joseph</p>
                             <p class="team-card-role">Founding Team</p>
-                        </article>
-                        <article class="team-card reveal">
-                            <p class="team-card-name">Mateja Raipac</p>
+                        </a>
+                        <a class="team-card reveal" href="https://www.linkedin.com/in/mateja-rapaic-ba2427221/" target="_blank" rel="noopener noreferrer">
+                            <p class="team-card-name">Mateja Rapaic</p>
                             <p class="team-card-role">Founding Team</p>
-                        </article>
-                        <article class="team-card reveal">
+                        </a>
+                        <a class="team-card reveal" href="https://www.linkedin.com/in/jeeyanmhajan/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
                             <p class="team-card-name">Jeeyan Mhajan</p>
                             <p class="team-card-role">Founding Team</p>
-                        </article>
-                        <article class="team-card reveal">
+                        </a>
+                        <a class="team-card reveal" href="https://www.linkedin.com/in/derric-sherwin-20a9a6343/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
                             <p class="team-card-name">Derric Sherwin</p>
                             <p class="team-card-role">Founding Team</p>
-                        </article>
-                        <article class="team-card reveal">
-                            <p class="team-card-name">Eric Frenkle</p>
+                        </a>
+                        <a class="team-card reveal" href="https://www.linkedin.com/in/eric-frenkel/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
+                            <p class="team-card-name">Eric Frenkel</p>
                             <p class="team-card-role">Founding Team</p>
-                        </article>
-                        <article class="team-card reveal">
+                        </a>
+                        <a class="team-card reveal" href="https://www.linkedin.com/in/lakshay-john-872b91351/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
                             <p class="team-card-name">Lakshay John</p>
                             <p class="team-card-role">Founding Team</p>
-                        </article>
+                        </a>
                     </div>
                 </div>
             </section>
@@ -843,6 +853,88 @@
             renderer.render(scene, camera);
         }
         requestAnimationFrame(animate);
+    })();
+    </script>
+
+    <script>
+    // ── Mini Star — Division Star card ────────────────────────────────────
+    (function () {
+        const canvas = document.getElementById('mini-star-canvas');
+        if (!canvas || typeof THREE === 'undefined') return;
+
+        const container = canvas.parentElement;
+        let W = container.offsetWidth || 280;
+        let H = container.offsetHeight || 280;
+        canvas.style.position = 'absolute';
+        canvas.style.top = '0';
+        canvas.style.left = '0';
+
+        const rdr = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        rdr.setSize(W, H);
+        rdr.setPixelRatio(Math.min(devicePixelRatio, 2));
+        rdr.toneMapping = THREE.ACESFilmicToneMapping;
+        rdr.toneMappingExposure = 1.15;
+
+        const sc = new THREE.Scene();
+        const cam = new THREE.PerspectiveCamera(38, W / H, 0.1, 200);
+        cam.position.set(0, 0, 3.0);
+        cam.lookAt(0, 0, 0);
+
+        // Environment
+        (function buildEnv() {
+            const sz = 256, c = document.createElement('canvas');
+            c.width = sz * 4; c.height = sz * 2;
+            const x = c.getContext('2d');
+            x.fillStyle = '#05070E'; x.fillRect(0, 0, c.width, c.height);
+            const s1 = x.createRadialGradient(sz * 1.4, sz * .45, 0, sz * 1.4, sz * .45, sz * .9);
+            s1.addColorStop(0, 'rgba(140,200,255,1)'); s1.addColorStop(.4, 'rgba(50,110,220,.28)'); s1.addColorStop(1, 'rgba(0,0,0,0)');
+            x.fillStyle = s1; x.fillRect(0, 0, c.width, c.height);
+            const t = new THREE.CanvasTexture(c);
+            t.mapping = THREE.EquirectangularReflectionMapping;
+            sc.environment = t;
+        })();
+
+        // Star geometry
+        const sh = new THREE.Shape(), oR = 1.32, iR = 0.52, pts = 5, step = (Math.PI * 2) / pts;
+        for (let i = 0; i < pts; i++) {
+            const oa = i * step - Math.PI / 2, ia = oa + step / 2;
+            sh[i === 0 ? 'moveTo' : 'lineTo'](Math.cos(oa) * oR, Math.sin(oa) * oR);
+            sh.lineTo(Math.cos(ia) * iR, Math.sin(ia) * iR);
+        }
+        sh.closePath();
+        const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.48, bevelEnabled: true, bevelThickness: 0.19, bevelSize: 0.19 * 0.6, bevelSegments: 12 });
+        geo.center(); geo.computeVertexNormals();
+
+        const mat = new THREE.MeshPhysicalMaterial({
+            color: 0x1055CC, emissive: 0x030E28, emissiveIntensity: 0.35,
+            metalness: 0.92, roughness: 0.05, clearcoat: 1, clearcoatRoughness: 0.02,
+            reflectivity: 1, envMapIntensity: 2
+        });
+        const star = new THREE.Mesh(geo, mat);
+        sc.add(star);
+
+        // Lights
+        sc.add(new THREE.AmbientLight(0x020610, 8));
+        const kL = new THREE.PointLight(0x99C8FF, 20, 20); kL.position.set(-3.5, 4.5, 4.5); sc.add(kL);
+        sc.add(new THREE.PointLight(0x0230AA, 6, 16)).position.set(5, -2, 2);
+        sc.add(new THREE.PointLight(0x00C0FF, 9, 14)).position.set(0.5, -1, -5);
+        const cL = new THREE.PointLight(0x2255FF, 0, 8); sc.add(cL);
+
+        window.addEventListener('resize', function () {
+            W = container.offsetWidth; H = container.offsetHeight;
+            cam.aspect = W / H; cam.updateProjectionMatrix();
+            rdr.setSize(W, H);
+        });
+
+        const clock = new THREE.Clock(); let ry = 0;
+        (function loop() {
+            requestAnimationFrame(loop);
+            const dt = clock.getDelta();
+            ry += dt * 0.5;
+            star.rotation.y = ry;
+            star.rotation.x = 0.2;
+            rdr.render(sc, cam);
+        })();
     })();
     </script>
 </body>

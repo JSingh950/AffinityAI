@@ -211,7 +211,7 @@ export function initScrollReveal() {
             io.unobserve(entry.target);
         });
     }, {
-        threshold: 0.15
+        threshold: 0.05
     });
 
     revealItems.forEach(function (item) {
