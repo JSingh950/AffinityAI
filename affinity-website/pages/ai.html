@@ -509,9 +509,20 @@
         .chat-window {
             border: 1px solid rgba(139, 0, 0, 0.2);
             background: rgba(10, 6, 8, 0.92);
+            display: flex;
+            flex-direction: column;
+            height: 380px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
             padding: 1rem;
-            display: grid;
+            display: flex;
+            flex-direction: column;
             gap: 0.8rem;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(139, 0, 0, 0.3) transparent;
         }
 
         .chat-bubble {
@@ -519,20 +530,103 @@
             padding: 0.75rem 0.9rem;
             border-radius: 10px;
             font-family: "Inter", sans-serif;
+            font-size: 0.85rem;
             line-height: 1.5;
         }
 
         .chat-bubble.user {
-            justify-self: start;
+            align-self: flex-start;
             background: rgba(159, 25, 25, 0.22);
             border: 1px solid rgba(159, 25, 25, 0.5);
+            color: #f0e8e8;
         }
 
         .chat-bubble.ai {
-            justify-self: end;
+            align-self: flex-end;
             background: rgba(198, 167, 94, 0.14);
             border: 1px solid rgba(198, 167, 94, 0.35);
             color: var(--gold);
+        }
+
+        .chat-bubble.typing {
+            align-self: flex-end;
+            background: rgba(198, 167, 94, 0.08);
+            border: 1px solid rgba(198, 167, 94, 0.2);
+            color: rgba(198, 167, 94, 0.5);
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        .chat-input-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0.8rem;
+            border-top: 1px solid rgba(139, 0, 0, 0.2);
+            background: rgba(10, 6, 8, 0.95);
+        }
+
+        .chat-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #f0e8e8;
+            font-family: "Inter", sans-serif;
+            font-size: 0.85rem;
+            padding: 0.4rem 0;
+            caret-color: var(--gold);
+        }
+
+        .chat-input::placeholder {
+            color: rgba(240, 232, 232, 0.3);
+        }
+
+        .chat-send-btn {
+            background: rgba(159, 25, 25, 0.6);
+            border: 1px solid rgba(159, 25, 25, 0.8);
+            color: #f0e8e8;
+            font-family: "DM Mono", monospace;
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-send-btn:hover {
+            background: rgba(159, 25, 25, 0.9);
+        }
+
+        .chat-send-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .chat-upload-btn {
+            background: transparent;
+            border: 1px solid rgba(139, 0, 0, 0.3);
+            color: rgba(240, 232, 232, 0.5);
+            font-size: 0.8rem;
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-upload-btn:hover {
+            border-color: rgba(139, 0, 0, 0.6);
+            color: rgba(240, 232, 232, 0.8);
+        }
+
+        .chat-empty {
+            color: rgba(240, 232, 232, 0.2);
+            font-family: "DM Mono", monospace;
+            font-size: 0.75rem;
+            text-align: center;
+            margin: auto;
         }
 
         .footer-cta-inner {
@@ -724,28 +818,56 @@
                     <aside class="ui-sidebar">
                         <h4>AFFINITY AI</h4>
                         <div class="ui-nav">
-                            <button class="active" type="button">Overview</button>
-                            <button type="button">RAG Query</button>
-                            <button type="button">Pipelines</button>
-                            <button type="button">Reports</button>
+                            <button class="active" type="button" data-panel="overview">Overview</button>
+                            <button type="button" data-panel="rag">RAG Query</button>
+                            <button type="button" data-panel="pipelines">Pipelines</button>
+                            <button type="button" data-panel="reports">Reports</button>
                         </div>
                     </aside>
                     <div class="ui-main">
-                        <div class="stat-row">
-                            <article class="stat-card">
-                                <p class="stat-label">Queries Today</p>
-                                <p class="stat-value" data-counter="commas" data-from="0" data-to="1204" data-duration="1400">0</p>
-                                <span class="stat-trend up">↑</span>
-                            </article>
-                            <article class="stat-card">
-                                <p class="stat-label">Avg. Response</p>
-                                <p class="stat-value" data-counter="seconds" data-from="0" data-to="80" data-duration="1400">0.00s</p>
-                                <span class="stat-trend down">↓</span>
-                            </article>
+                        <!-- Overview panel -->
+                        <div id="panel-overview">
+                            <div class="stat-row">
+                                <article class="stat-card">
+                                    <p class="stat-label">Queries Today</p>
+                                    <p class="stat-value" data-counter="commas" data-from="0" data-to="1204" data-duration="1400">0</p>
+                                    <span class="stat-trend up">↑</span>
+                                </article>
+                                <article class="stat-card">
+                                    <p class="stat-label">Avg. Response</p>
+                                    <p class="stat-value" data-counter="seconds" data-from="0" data-to="80" data-duration="1400">0.00s</p>
+                                    <span class="stat-trend down">↓</span>
+                                </article>
+                            </div>
+                            <div class="chat-window" style="height:200px;pointer-events:none;opacity:0.5;">
+                                <div class="chat-messages" style="display:flex;flex-direction:column;gap:0.8rem;padding:1rem;">
+                                    <div class="chat-bubble user">Pull the latest SOC2 controls and summarize owner + next audit date.</div>
+                                    <div class="chat-bubble ai">Found 18 controls. Owners assigned. Next audit dates loaded. Drafted handoff summary and queued reminders in your PM tool.</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="chat-window">
-                            <div class="chat-bubble user">Pull the latest SOC2 controls and summarize owner + next audit date.</div>
-                            <div class="chat-bubble ai">Found 18 controls. Owners assigned. Next audit dates loaded. Drafted handoff summary and queued reminders in your PM tool.</div>
+                        <!-- RAG Query panel -->
+                        <div id="panel-rag" style="display:none;">
+                            <div class="chat-window" id="rag-chat">
+                                <div class="chat-messages" id="chat-messages">
+                                    <p class="chat-empty" id="chat-empty">// ask anything — upload a doc to get started</p>
+                                </div>
+                                <div class="chat-input-bar">
+                                    <input class="chat-input" id="chat-input" type="text" placeholder="Ask a question..." autocomplete="off" />
+                                    <label class="chat-upload-btn" title="Upload PDF or TXT" style="cursor:pointer">
+                                        ↑ doc
+                                        <input type="file" id="chat-file" accept=".pdf,.txt" style="display:none" />
+                                    </label>
+                                    <button class="chat-send-btn" id="chat-send">Send</button>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Placeholder panels -->
+                        <div id="panel-pipelines" style="display:none;">
+                            <p class="chat-empty" style="padding:2rem 0;">// pipelines coming soon</p>
+                        </div>
+                        <div id="panel-reports" style="display:none;">
+                            <p class="chat-empty" style="padding:2rem 0;">// reports coming soon</p>
                         </div>
                     </div>
                 </div>
@@ -1171,7 +1293,6 @@
             const heroTitle = document.querySelector('.glitch-target');
 
             if (body) {
-                body.classList.add('cursor-enhanced');
                 requestAnimationFrame(function () {
                     body.classList.add('page-ready');
                 });
@@ -1180,7 +1301,6 @@
             const mobius = initMobius(canvas);
             initProgressBar();
             initScrollReveal();
-            cursorFollow();
             glitchText(heroTitle);
             initCounters();
 
@@ -1207,6 +1327,133 @@
                 window.setTimeout(function () { window.location.href = nextUrl; }, 400);
             });
         });
+    </script>
+
+    <script>
+        // ── Sidebar tab switching ────────────────────────────────────────────
+        (function () {
+            const btns = document.querySelectorAll('.ui-nav button[data-panel]');
+            btns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    btns.forEach(function (b) { b.classList.remove('active'); });
+                    btn.classList.add('active');
+                    document.querySelectorAll('.ui-main > div[id^="panel-"]').forEach(function (p) {
+                        p.style.display = 'none';
+                    });
+                    const target = document.getElementById('panel-' + btn.dataset.panel);
+                    if (target) target.style.display = '';
+                });
+            });
+        })();
+
+        // ── RAG Chat Integration ─────────────────────────────────────────────
+        (function () {
+            const API = 'http://localhost:8000';
+            const messagesEl = document.getElementById('chat-messages');
+            const inputEl    = document.getElementById('chat-input');
+            const sendBtn    = document.getElementById('chat-send');
+            const fileInput  = document.getElementById('chat-file');
+            const emptyNote  = document.getElementById('chat-empty');
+            const history    = [];
+
+            function scrollBottom() {
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            function addBubble(role, text) {
+                if (emptyNote) emptyNote.remove();
+                const div = document.createElement('div');
+                div.className = 'chat-bubble ' + (role === 'user' ? 'user' : 'ai');
+                div.textContent = text;
+                messagesEl.appendChild(div);
+                scrollBottom();
+                return div;
+            }
+
+            function setLoading(on) {
+                sendBtn.disabled = on;
+                inputEl.disabled = on;
+            }
+
+            async function sendMessage() {
+                const text = inputEl.value.trim();
+                if (!text) return;
+
+                addBubble('user', text);
+                history.push({ role: 'user', content: text });
+                inputEl.value = '';
+                setLoading(true);
+
+                // typing indicator
+                const typing = document.createElement('div');
+                typing.className = 'chat-bubble typing';
+                typing.textContent = '...';
+                messagesEl.appendChild(typing);
+                scrollBottom();
+
+                try {
+                    const res = await fetch(API + '/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: text, history: history.slice(0, -1), stream: false })
+                    });
+
+                    typing.remove();
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        addBubble('ai', 'Error: ' + (err.detail || res.statusText));
+                        return;
+                    }
+
+                    const data = await res.json();
+                    const reply = data.answer || data.response || data.content || JSON.stringify(data);
+                    addBubble('ai', reply);
+                    history.push({ role: 'assistant', content: reply });
+
+                } catch (e) {
+                    typing.remove();
+                    addBubble('ai', 'Could not reach backend — is it running on port 8000?');
+                } finally {
+                    setLoading(false);
+                    inputEl.focus();
+                }
+            }
+
+            sendBtn.addEventListener('click', sendMessage);
+            inputEl.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+            });
+
+            // File upload
+            fileInput.addEventListener('change', async function () {
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                const note = addBubble('user', '↑ Uploading: ' + file.name + '…');
+                setLoading(true);
+
+                const form = new FormData();
+                form.append('file', file);
+
+                try {
+                    const res = await fetch(API + '/upload', { method: 'POST', body: form });
+                    const data = await res.json().catch(() => ({}));
+                    note.textContent = '↑ ' + file.name;
+                    if (res.ok) {
+                        addBubble('ai', '✓ Document indexed — you can now ask questions about it.');
+                    } else {
+                        addBubble('ai', 'Upload failed: ' + (data.detail || res.statusText));
+                    }
+                } catch (e) {
+                    note.textContent = '↑ ' + file.name + ' (upload failed)';
+                    addBubble('ai', 'Could not reach backend — is it running on port 8000?');
+                } finally {
+                    setLoading(false);
+                    fileInput.value = '';
+                }
+            });
+        })();
     </script>
 </body>
 </html>

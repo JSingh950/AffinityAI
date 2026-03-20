@@ -37,6 +37,20 @@ body.cursor-enhanced {
     cursor: none;
 }
 
+.custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 12px;
+    height: 12px;
+    background: #ffffff;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 99999;
+    mix-blend-mode: difference;
+    will-change: transform;
+}
+
 body.page-ready {
     opacity: 1;
 }
