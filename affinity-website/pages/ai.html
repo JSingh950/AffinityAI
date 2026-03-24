@@ -667,7 +667,7 @@
         <div class="nav-links">
             <a href="ai.html">AI</a>
             <span aria-hidden="true">·</span>
-            <a href="photos.html">STAR</a>
+            <a href="photos.html">PHOTOS</a>
         </div>
     </nav>
 
@@ -740,8 +740,13 @@
                 </div>
             </div>
 
-
-            <div class="division-row reveal">
+            <div class="division-row reverse reveal">
+                <div class="division-content">
+                    <p class="division-label">// AGENTIC CODING</p>
+                    <h3>Software That Builds Itself.</h3>
+                    <p>We use agentic coding workflows to design and deploy full software systems — including web applications — through orchestrated AI pipelines. Faster delivery, tighter architecture, less overhead.</p>
+                    <span class="badge">AI-POWERED DEVELOPMENT</span>
+                </div>
                 <div class="division-visual">
                     <div class="terminal-visual" aria-hidden="true">
                         <span class="terminal-line">&gt; initializing agent...</span>
@@ -749,6 +754,30 @@
                         <span class="terminal-line">&gt; executing task chain</span>
                         <span class="terminal-line">&gt; compiling deploy bundle</span>
                         <span class="terminal-line">✓ complete</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="division-row reveal">
+                <div class="division-visual">
+                    <div class="browser-mock" aria-hidden="true">
+                        <div class="browser-chrome">
+                            <span class="chrome-dot"></span>
+                            <span class="chrome-dot"></span>
+                            <span class="chrome-dot"></span>
+                            <span class="chrome-url">affinity-client.co</span>
+                        </div>
+                        <div class="browser-wireframe">
+                            <div class="wire-hero"></div>
+                            <div class="wire-row">
+                                <div></div>
+                                <div></div>
+                            </div>
+                            <div class="wire-row">
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="division-content">
@@ -798,14 +827,22 @@
                     <div class="ui-main">
                         <!-- Overview panel -->
                         <div id="panel-overview">
-                            <div class="stat-row" style="display:block; padding: 0.75rem 0 1rem;">
-                                <p class="stat-label" style="font-size:0.75rem; letter-spacing:0.1em; color: rgba(245,245,245,0.45); margin-bottom:0.4rem;">// TRY IT YOURSELF</p>
-                                <p style="font-size:1rem; font-weight:600; color:#f5f5f5; line-height:1.5;">Ask Affinity anything about our services, process, or team — switch to the <span style="color:#c6a75e;">RAG Query</span> tab and start a conversation.</p>
+                            <div class="stat-row">
+                                <article class="stat-card">
+                                    <p class="stat-label">Queries Today</p>
+                                    <p class="stat-value" data-counter="commas" data-from="0" data-to="1204" data-duration="1400">0</p>
+                                    <span class="stat-trend up">↑</span>
+                                </article>
+                                <article class="stat-card">
+                                    <p class="stat-label">Avg. Response</p>
+                                    <p class="stat-value" data-counter="seconds" data-from="0" data-to="80" data-duration="1400">0.00s</p>
+                                    <span class="stat-trend down">↓</span>
+                                </article>
                             </div>
                             <div class="chat-window" style="height:200px;pointer-events:none;opacity:0.5;">
                                 <div class="chat-messages" style="display:flex;flex-direction:column;gap:0.8rem;padding:1rem;">
-                                    <div class="chat-bubble ai">What services does Affinity AI offer?</div>
-                                    <div class="chat-bubble user">Affinity AI builds custom RAG platforms, automation pipelines, and AI-driven web systems — tailored to your business operations.</div>
+                                    <div class="chat-bubble user">Pull the latest SOC2 controls and summarize owner + next audit date.</div>
+                                    <div class="chat-bubble ai">Found 18 controls. Owners assigned. Next audit dates loaded. Drafted handoff summary and queued reminders in your PM tool.</div>
                                 </div>
                             </div>
                         </div>
@@ -813,10 +850,14 @@
                         <div id="panel-rag" style="display:none;">
                             <div class="chat-window" id="rag-chat">
                                 <div class="chat-messages" id="chat-messages">
-                                    <p class="chat-empty" id="chat-empty">// ask anything about Affinity</p>
+                                    <p class="chat-empty" id="chat-empty">// ask anything — upload a doc to get started</p>
                                 </div>
                                 <div class="chat-input-bar">
                                     <input class="chat-input" id="chat-input" type="text" placeholder="Ask a question..." autocomplete="off" />
+                                    <label class="chat-upload-btn" title="Upload PDF or TXT" style="cursor:pointer">
+                                        ↑ doc
+                                        <input type="file" id="chat-file" accept=".pdf,.txt" style="display:none" />
+                                    </label>
                                     <button class="chat-send-btn" id="chat-send">Send</button>
                                 </div>
                             </div>
@@ -1311,6 +1352,7 @@
             const messagesEl = document.getElementById('chat-messages');
             const inputEl    = document.getElementById('chat-input');
             const sendBtn    = document.getElementById('chat-send');
+            const fileInput  = document.getElementById('chat-file');
             const emptyNote  = document.getElementById('chat-empty');
             const history    = [];
 
@@ -1383,6 +1425,34 @@
                 if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
             });
 
+            // File upload
+            fileInput.addEventListener('change', async function () {
+                const file = fileInput.files[0];
+                if (!file) return;
+
+                const note = addBubble('user', '↑ Uploading: ' + file.name + '…');
+                setLoading(true);
+
+                const form = new FormData();
+                form.append('file', file);
+
+                try {
+                    const res = await fetch(API + '/upload', { method: 'POST', body: form });
+                    const data = await res.json().catch(() => ({}));
+                    note.textContent = '↑ ' + file.name;
+                    if (res.ok) {
+                        addBubble('ai', '✓ Document indexed — you can now ask questions about it.');
+                    } else {
+                        addBubble('ai', 'Upload failed: ' + (data.detail || res.statusText));
+                    }
+                } catch (e) {
+                    note.textContent = '↑ ' + file.name + ' (upload failed)';
+                    addBubble('ai', 'Could not reach backend — is it running on port 8000?');
+                } finally {
+                    setLoading(false);
+                    fileInput.value = '';
+                }
+            });
         })();
     </script>
 </body>

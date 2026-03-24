@@ -516,7 +516,7 @@ body.page-exit {
 .reveal.visible {
     opacity: 1;
     transform: translateY(0);
-    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition: opacity 0.7s ease, transform 0.7s ease;
 }
 
 @keyframes page-fade-in {
