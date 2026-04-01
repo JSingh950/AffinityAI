@@ -877,18 +877,22 @@
             sc.environment = t;
         })();
 
-        // Gaia sphere
+        // Gaia sphere — Earth texture
+        const tlIdx = new THREE.TextureLoader();
         const coreMat = new THREE.MeshPhysicalMaterial({
-            color: 0x041230, emissive: 0x082060, emissiveIntensity: 0.55,
-            metalness: 0.4, roughness: 0.35, clearcoat: 0.9, clearcoatRoughness: 0.08,
-            reflectivity: 1, envMapIntensity: 2.5
+            color: 0x88cc88,
+            map: tlIdx.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'),
+            normalMap: tlIdx.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg'),
+            normalScale: new THREE.Vector2(0.6, 0.6),
+            roughnessMap: tlIdx.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+            roughness: 0.75, metalness: 0.05, clearcoat: 0.2, clearcoatRoughness: 0.2, envMapIntensity: 1.2
         });
         const core = new THREE.Mesh(new THREE.SphereGeometry(0.85, 48, 48), coreMat);
         sc.add(core);
 
-        // Wireframe overlay
+        // Wireframe overlay (subtle)
         sc.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.89, 3),
-            new THREE.MeshBasicMaterial({ color: 0x19D8FF, wireframe: true, transparent: true, opacity: 0.10 })));
+            new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true, transparent: true, opacity: 0.04 })));
 
         // Orbital rings
         function mkRing(inner, outer, rx, rz, op) {
@@ -900,9 +904,9 @@
         const ring2 = mkRing(1.35, 1.37, Math.PI / 3, 0.4, 0.25);
 
         // Lights
-        sc.add(new THREE.AmbientLight(0x020610, 6));
-        const kL = new THREE.PointLight(0x19D8FF, 18, 20); kL.position.set(-3.5, 4.5, 4.5); sc.add(kL);
-        sc.add(new THREE.PointLight(0x00C0FF, 9, 14)).position.set(0.5, -1, -5);
+        sc.add(new THREE.AmbientLight(0x112244, 4));
+        const kL = new THREE.PointLight(0xfff5e0, 22, 20); kL.position.set(-3.5, 4.5, 4.5); sc.add(kL);
+        sc.add(new THREE.PointLight(0x4488cc, 7, 14)).position.set(0.5, -1, -5);
 
         window.addEventListener('resize', function () {
             W = container.offsetWidth; H = container.offsetHeight;

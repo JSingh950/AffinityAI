@@ -400,11 +400,11 @@ function mkHalo(sc,sz,stops){
   sc.add(m);return m;
 }
 function addLights(sc){
-  sc.add(new THREE.AmbientLight(0x020610,6));
-  const kL=new THREE.PointLight(0x19D8FF,18,20);kL.position.set(-3.5,4.5,4.5);sc.add(kL);
-  sc.add(new THREE.PointLight(0x0230AA,6,16)).position.set(5,-2,2);
-  sc.add(new THREE.PointLight(0x00C0FF,9,14)).position.set(.5,-1,-5);
-  const cL=new THREE.PointLight(0x19D8FF,0,8);sc.add(cL);
+  sc.add(new THREE.AmbientLight(0x112244,4));
+  const kL=new THREE.PointLight(0xfff5e0,22,20);kL.position.set(-3.5,4.5,4.5);sc.add(kL);
+  sc.add(new THREE.PointLight(0x1a3a8a,5,16)).position.set(5,-2,2);
+  sc.add(new THREE.PointLight(0x4488cc,7,14)).position.set(.5,-1,-5);
+  const cL=new THREE.PointLight(0xfff5e0,0,8);sc.add(cL);
   return{kL,cL};
 }
 
@@ -419,32 +419,36 @@ function makeGaia(canvasEl, onReady){
   rdr.toneMapping=THREE.ACESFilmicToneMapping;rdr.toneMappingExposure=1.1;
 
   const sc=new THREE.Scene();
+  const tl=new THREE.TextureLoader();
+  const earthDay =tl.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg');
+  const earthNrm =tl.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg');
+  const earthSpec=tl.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg');
   const cam=new THREE.PerspectiveCamera(38,W/H,.1,200);
   cam.position.set(0,0,7.5);
   cam.lookAt(0,0,0);
   sc.environment=buildEnv();
 
-  // Core sphere
+  // Core sphere — Earth texture
   const coreMat=new THREE.MeshPhysicalMaterial({
-    color:0x041230,emissive:0x082060,emissiveIntensity:.55,
-    metalness:.4,roughness:.35,clearcoat:.9,clearcoatRoughness:.08,
-    reflectivity:1,envMapIntensity:2.5
+    color:0x88cc88,map:earthDay,normalMap:earthNrm,normalScale:new THREE.Vector2(.6,.6),
+    roughnessMap:earthSpec,roughness:.75,metalness:.05,
+    clearcoat:.2,clearcoatRoughness:.2,envMapIntensity:1.2
   });
-  const core=new THREE.Mesh(new THREE.SphereGeometry(1.3,64,64),coreMat);
+  const core=new THREE.Mesh(new THREE.SphereGeometry(1.55,64,64),coreMat);
   sc.add(core);
 
-  // Hex wireframe overlay
+  // Hex wireframe overlay (subtle over Earth)
   const wireMat=new THREE.MeshBasicMaterial({
-    color:0x19D8FF,wireframe:true,transparent:true,opacity:.10
+    color:0xffffff,wireframe:true,transparent:true,opacity:.04
   });
-  const wire=new THREE.Mesh(new THREE.IcosahedronGeometry(1.35,4),wireMat);
+  const wire=new THREE.Mesh(new THREE.IcosahedronGeometry(1.61,4),wireMat);
   sc.add(wire);
 
-  // Atmosphere shell
+  // Atmosphere shell — blue-white like Earth
   const atmMat=new THREE.MeshBasicMaterial({
-    color:0x19D8FF,transparent:true,opacity:.04,side:THREE.BackSide
+    color:0x6aadff,transparent:true,opacity:.07,side:THREE.BackSide
   });
-  sc.add(new THREE.Mesh(new THREE.SphereGeometry(1.55,32,32),atmMat));
+  sc.add(new THREE.Mesh(new THREE.SphereGeometry(1.84,32,32),atmMat));
 
   // Orbital rings
   function makeRing(inner,outer,rotX,rotZ,opacity){
@@ -524,10 +528,8 @@ makeGaia(
       .add({targets:'#gLab',opacity:[0,1],translateY:[6,0],duration:450,easing:'easeOutCubic'},'-=250')
       .add({targets:'#gH',opacity:[0,1],translateY:[16,0],duration:600,easing:'easeOutCubic'},'-=350');
     setTimeout(()=>{
-      anime({targets:S,sc:[1,1.018,1],duration:5500,loop:true,easing:'easeInOutSine',update:()=>core.scale.setScalar(S.sc)});
       anime({targets:S,hI:[1,.55,1],hO:[.55,.2,.55],duration:5500,loop:true,easing:'easeInOutSine',update:()=>{hI.material.opacity=S.hI;hO.material.opacity=S.hO;}});
-      anime({targets:S,cI:[5,10,5],duration:4800,loop:true,easing:'easeInOutSine',update:()=>{cL.intensity=S.cI;}});
-      anime({targets:coreMat,emissiveIntensity:[.55,.85,.55],duration:4800,loop:true,easing:'easeInOutSine'});
+      anime({targets:S,cI:[5,10,5],duration:5500,loop:true,easing:'easeInOutSine',update:()=>{cL.intensity=S.cI;}});
     },1800);
   }
 );
@@ -548,10 +550,8 @@ makeGaia(
         .add({targets:'#gSectH',opacity:[0,1],translateY:[16,0],duration:600,easing:'easeOutCubic'},'-=350')
         .add({targets:'#gSectTag',opacity:[0,1],translateY:[8,0],duration:500,easing:'easeOutCubic'},'-=300');
       setTimeout(()=>{
-        anime({targets:S,sc:[1,1.02,1],duration:5200,loop:true,easing:'easeInOutSine',update:()=>core.scale.setScalar(S.sc)});
         anime({targets:S,hI:[1,.5,1],hO:[.6,.2,.6],duration:5200,loop:true,easing:'easeInOutSine',update:()=>{hI.material.opacity=S.hI;hO.material.opacity=S.hO;}});
-        anime({targets:S,cI:[6,12,6],duration:4800,loop:true,easing:'easeInOutSine',update:()=>{cL.intensity=S.cI;}});
-        anime({targets:coreMat,emissiveIntensity:[.55,.88,.55],duration:4800,loop:true,easing:'easeInOutSine'});
+        anime({targets:S,cI:[6,12,6],duration:5200,loop:true,easing:'easeInOutSine',update:()=>{cL.intensity=S.cI;}});
       },1600);
     },{threshold:.1}).observe(document.getElementById('gaia-globe'));
   }
@@ -570,21 +570,26 @@ makeGaia(
   const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(38,W/H,.1,200);
   cam.position.set(0,0,4.5);cam.lookAt(0,0,0);
   sc.environment=buildEnv();
+  const tl2=new THREE.TextureLoader();
   const coreMat=new THREE.MeshPhysicalMaterial({
-    color:0x041230,emissive:0x082060,emissiveIntensity:.55,
-    metalness:.4,roughness:.35,clearcoat:.9,clearcoatRoughness:.08,envMapIntensity:2.5
+    color:0x88cc88,
+    map:tl2.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg'),
+    normalMap:tl2.load('https://threejs.org/examples/textures/planets/earth_normal_2048.jpg'),
+    normalScale:new THREE.Vector2(.6,.6),
+    roughnessMap:tl2.load('https://threejs.org/examples/textures/planets/earth_specular_2048.jpg'),
+    roughness:.75,metalness:.05,clearcoat:.2,clearcoatRoughness:.2,envMapIntensity:1.2
   });
   const core=new THREE.Mesh(new THREE.SphereGeometry(0.9,48,48),coreMat);sc.add(core);
-  const wire=new THREE.Mesh(new THREE.IcosahedronGeometry(0.94,3),new THREE.MeshBasicMaterial({color:0x19D8FF,wireframe:true,transparent:true,opacity:.10}));sc.add(wire);
+  const wire=new THREE.Mesh(new THREE.IcosahedronGeometry(0.94,3),new THREE.MeshBasicMaterial({color:0xffffff,wireframe:true,transparent:true,opacity:.04}));sc.add(wire);
   function mkRing(inner,outer,rx,rz,op){
     const r=new THREE.Mesh(new THREE.RingGeometry(inner,outer,64),new THREE.MeshBasicMaterial({color:0x19D8FF,side:THREE.DoubleSide,transparent:true,opacity:op,blending:THREE.AdditiveBlending,depthWrite:false}));
     r.rotation.x=rx;r.rotation.z=rz;sc.add(r);return r;
   }
   const r1=mkRing(1.15,1.17,Math.PI/2,0,0.4);
   const r2=mkRing(1.4,1.41,Math.PI/3,0.4,0.25);
-  sc.add(new THREE.AmbientLight(0x020610,6));
-  const kL=new THREE.PointLight(0x19D8FF,18,20);kL.position.set(-3.5,4.5,4.5);sc.add(kL);
-  sc.add(new THREE.PointLight(0x00C0FF,9,14)).position.set(.5,-1,-5);
+  sc.add(new THREE.AmbientLight(0x112244,4));
+  const kL=new THREE.PointLight(0xfff5e0,22,20);kL.position.set(-3.5,4.5,4.5);sc.add(kL);
+  sc.add(new THREE.PointLight(0x4488cc,7,14)).position.set(.5,-1,-5);
   window.addEventListener('resize',()=>{W=container.offsetWidth;H=container.offsetHeight;cam.aspect=W/H;cam.updateProjectionMatrix();rdr.setSize(W,H);});
   const clk=new THREE.Clock();let ry=0;
   (function loop(){requestAnimationFrame(loop);const dt=clk.getDelta();ry+=dt*.08;core.rotation.y=ry;wire.rotation.y=ry*.65;r1.rotation.y=ry*.25;r2.rotation.y=-ry*.18;rdr.render(sc,cam);})();
