@@ -651,7 +651,7 @@ makeGaia(
   }
 
   // Slider
-  let progress=0,dragging=false;
+  let progress=0,dragging=false,inView=false;
   const slider=document.getElementById('rag-slider');
   if(slider){
     slider.addEventListener('mousedown',()=>dragging=true);
@@ -661,6 +661,11 @@ makeGaia(
     slider.addEventListener('input',()=>{progress=+slider.value;});
   }
 
+  // Only start expanding when section scrolls into view
+  new IntersectionObserver(entries=>{
+    if(entries[0].isIntersecting) inView=true;
+  },{threshold:0.15}).observe(wrap);
+
   let lastSig=0;
   const T0=Date.now();
   (function loop(){
@@ -669,8 +674,8 @@ makeGaia(
     if(W!==wrap.offsetWidth||H!==wrap.offsetHeight)resize();
     ctx.clearRect(0,0,W,H);
 
-    // Auto-advance
-    if(!dragging&&progress<100){
+    // Auto-advance only once in view
+    if(!dragging&&inView&&progress<100){
       progress=Math.min(100,progress+0.35);
       if(slider)slider.value=progress;
     }
