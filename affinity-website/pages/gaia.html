@@ -81,8 +81,8 @@ body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;fon
    Full-viewport dark section — no photo needed.
 ────────────────────────────────────────────── */
 .airgap{
-  position:relative;height:100vh;min-height:500px;overflow:hidden;
-  display:flex;align-items:flex-end;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;
   border-top:1px solid var(--line);
   background:
     radial-gradient(ellipse at 20% 40%,rgba(15,55,180,0.22) 0%,transparent 55%),
@@ -239,16 +239,16 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
     <h1 class="h-h1" id="gH">Affinity<br>Gaia</h1>
     <div class="hero-services">
       <div class="hero-service" id="srv1">
-        <h3>On-Premise AI</h3>
-        <p>Your model, your hardware, your walls. Gaia runs entirely on your infrastructure with zero internet exposure.</p>
+        <h3>Weight Ownership</h3>
+        <p>You own the model, not just the access. Every institution that deploys Gaia owns the weights they build — the accumulated intelligence of their practice, encoded in parameters they control.</p>
       </div>
       <div class="hero-service" id="srv2">
-        <h3>Massive RAG Libraries</h3>
-        <p>A building-wide intelligence with deep knowledge of every client, every file, and every case — always on hand.</p>
+        <h3>Multi-LoRA Neuroplasticity</h3>
+        <p>Gaia learns from every matter it handles. Lightweight adapters encode your firm's citation patterns, jurisdictional tendencies, and argument structures — composing on top of the base model in real time.</p>
       </div>
       <div class="hero-service" id="srv3">
-        <h3>Custom AI Integration</h3>
-        <p>Don't have Gaia yet? We build the tools that fit your workflow — Gaia-powered or cloud-based, we make it work.</p>
+        <h3>Federated Privacy</h3>
+        <p>Model improvements are trained locally on your hardware. Only gradient signals — never source documents — are transmitted. We improve the model without ever seeing what it learned from.</p>
       </div>
     </div>
   </div>
@@ -257,17 +257,17 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 
 <!-- §2 PRODUCT PANEL -->
 <div class="product rv">
-  <div class="p-badge">On-Premise Intelligence</div>
+  <div class="p-badge">Privacy-First AI Infrastructure</div>
   <div class="p-title">Affinity Gaia</div>
-  <div class="p-tag">Enterprise AI that never leaves your building.</div>
+  <div class="p-tag">Not a cheaper frontier model. A categorically different product — built for institutions whose primary concern is control over their data and their AI.</div>
 </div>
 
 <!-- §3 AIRGAP — full viewport -->
 <section class="airgap" id="section-airgap">
   <div class="airgap-grid"></div>
   <div class="airgap-over">
-    <h2 class="airgap-h rv">Zero internet.<br><em>Complete intelligence.</em></h2>
-    <p class="airgap-sub rv">Gaia is deployed entirely on your own hardware. No cloud calls, no external APIs, no data leaving the building — ever. Every query stays within your infrastructure, giving you full sovereign control over your AI system.</p>
+    <h2 class="airgap-h rv">Built sideways,<br><em>not upward.</em></h2>
+    <p class="airgap-sub rv">The AI industry is racing to build larger models, more compute, more infrastructure — a pyramid only the wealthiest firms can climb. Gaia goes the other direction. Apple Silicon's Unified Memory Architecture eliminates the Von Neumann bottleneck, making a Mac Studio on your desk a viable AI server that rivals dedicated GPU rigs at a fraction of the cost and power draw.</p>
   </div>
 </section>
 
@@ -275,9 +275,9 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 <section class="rag" id="section-rag">
   <div class="rag-cols">
     <div class="rag-text rv">
-      <div class="rag-label">Knowledge at Scale</div>
-      <h2 class="rag-h">Every document.<br>Every case.<br>Instantly searchable.</h2>
-      <p class="rag-body">Gaia is the natural habitat for massive Retrieval-Augmented Generation libraries. Ingest your entire organization's knowledge base — client files, internal documents, case histories — and turn it into a single, queryable intelligence. A building-wide personal assistant that knows everything your organization knows.</p>
+      <div class="rag-label">The Revision Stage</div>
+      <h2 class="rag-h">The feedback loop<br>no AI has ever<br>bothered to close.</h2>
+      <p class="rag-body">Every AI system on the market outputs into a void. Gaia closes it. When a matter ends, the attorney uploads final documents back into Gaia — the actual work product that went to court. Gaia compares what it produced against what made the final cut, then asks questions. Not forms. A conversation. Over time, Gaia stops seeking correction and starts seeking refinement. The model doesn't just serve the firm. It becomes the firm.</p>
     </div>
     <div class="rag-visual">
       <div class="rag-nodes" id="rag-nodes"></div>
@@ -288,9 +288,9 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 <!-- §5 SECURITY STRIP -->
 <section class="sec-strip" id="section-security">
   <div class="rv">
-    <div class="sec-label">Data Sovereignty</div>
-    <h2 class="sec-h">Your data never<br>leaves the room.</h2>
-    <p class="sec-body" style="margin-top:1.2rem">Traditional AI services route every query through external servers. Gaia doesn't. Your prompts, your documents, your responses — all processed locally. Full compliance with even the strictest data governance requirements.</p>
+    <div class="sec-label">Federated Learning</div>
+    <h2 class="sec-h">We improve the model<br>without seeing what<br>it learned from.</h2>
+    <p class="sec-body" style="margin-top:1.2rem">Model improvements are trained locally on your hardware. Only gradient updates — the mathematical signal describing which parameters should move — are transmitted back to us. Differential privacy adds calibrated noise to those gradients, providing a provable bound on how much could theoretically be reconstructed. What Gaia knows stays with the firm.</p>
   </div>
   <div class="sec-stats rv">
     <div class="sec-stat">
@@ -322,31 +322,35 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 <!-- §7 MARQUEE + PROCESS -->
 <div class="mq">
   <div class="mq-t">
-    <span class="mq-i">Air-gapped AI</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">On-premise deployment</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Massive RAG libraries</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Zero internet exposure</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Air-gapped AI</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">On-premise deployment</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Massive RAG libraries</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Zero internet exposure</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Weight ownership</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Multi-LoRA neuroplasticity</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Federated learning</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Apple Silicon on-premise</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">The revision stage</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Differential privacy</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Weight ownership</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Multi-LoRA neuroplasticity</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Federated learning</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Apple Silicon on-premise</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">The revision stage</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Differential privacy</span><span class="mq-s"> ◈ </span>
   </div>
 </div>
 <div class="process">
   <div class="ps rv">
     <div class="ps-n">01</div>
     <div class="ps-t">We Deploy.</div>
-    <div class="ps-b">Gaia is installed on your hardware — fully configured, air-gapped, and ready to run without a single external connection.</div>
+    <div class="ps-b">Gaia is installed on Apple Silicon hardware at your site — fully on-premise, no external connections. A Mac Studio on your desk replaces a $30,000+ GPU server at a fraction of the cost and power draw.</div>
   </div>
   <div class="ps rv">
     <div class="ps-n">02</div>
-    <div class="ps-t">We Configure.</div>
-    <div class="ps-b">We ingest your organization's knowledge base — documents, client files, internal data — and build your RAG library from the ground up.</div>
+    <div class="ps-t">Gaia Learns.</div>
+    <div class="ps-b">Through the revision stage, Gaia tracks every document it touches. When a matter closes, it compares its drafts against the final work product and conducts a conversational debrief — building Multi-LoRA adapters that encode your firm's specific knowledge.</div>
   </div>
   <div class="ps rv">
     <div class="ps-n">03</div>
-    <div class="ps-t">We Evolve.</div>
-    <div class="ps-b">Your Gaia system grows with you. We continuously tune models, expand your libraries, and keep the system healthy as your needs change.</div>
+    <div class="ps-t">You Own It.</div>
+    <div class="ps-b">The AI Architect — certified by Affinity, accountable to your institution — maintains and evolves your model weights. Not access. Not a subscription. The accumulated intelligence of your practice, in parameters you control.</div>
   </div>
 </div>
 
@@ -357,8 +361,8 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
   </div>
   <div class="ct-txt rv-r">
     <div class="ct-label">Deploy Gaia</div>
-    <h2 class="ct-h">Bring AI<br>in-house.</h2>
-    <p class="ct-body">Ready to run a model that never touches the internet? Affinity builds and maintains your Gaia system from day one — fully local, fully yours.</p>
+    <h2 class="ct-h">Own your AI.<br>Own your data.</h2>
+    <p class="ct-body">We are not building a product. We are building a standard — one where the human is not replaced, the AI is not just a tool, and the institution owns what it builds. Ready to deploy?</p>
   </div>
 </section>
 
