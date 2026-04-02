@@ -81,8 +81,8 @@ body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;fon
    Full-viewport dark section — no photo needed.
 ────────────────────────────────────────────── */
 .airgap{
-  position:relative;height:100vh;min-height:500px;overflow:hidden;
-  display:flex;align-items:flex-end;
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;
   border-top:1px solid var(--line);
   background:
     radial-gradient(ellipse at 20% 40%,rgba(15,55,180,0.22) 0%,transparent 55%),
@@ -99,7 +99,7 @@ body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;fon
 }
 .airgap-over{
   position:relative;z-index:1;
-  width:100%;padding:0 60px 60px;
+  width:100%;padding:80px 60px;
   background:linear-gradient(to top,rgba(8,9,14,.98) 0%,rgba(8,9,14,.35) 45%,transparent 100%)
 }
 .airgap-h{font-family:"Syne",sans-serif;font-weight:300;font-size:clamp(36px,5.5vw,78px);line-height:1.02;letter-spacing:-.025em}
@@ -116,7 +116,7 @@ body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;fon
 .rag-h{font-family:"Syne",sans-serif;font-weight:300;font-size:clamp(26px,3.8vw,52px);line-height:1.05;letter-spacing:-.02em}
 .rag-body{font-size:13px;line-height:1.72;color:var(--muted);max-width:340px}
 .rag-visual{
-  position:relative;overflow:hidden;min-height:400px;
+  position:relative;overflow:hidden;min-height:700px;
   background:
     radial-gradient(ellipse at 60% 40%,rgba(25,216,255,0.12) 0%,transparent 55%),
     radial-gradient(ellipse at 20% 80%,rgba(10,40,180,0.18) 0%,transparent 50%),
@@ -129,6 +129,11 @@ body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;fon
   opacity:0.7;
 }
 .rag-line{position:absolute;height:1px;background:linear-gradient(90deg,transparent,rgba(25,216,255,0.3),transparent);transform-origin:left center}
+.rag-ctrl{position:absolute;bottom:28px;left:32px;right:32px;z-index:10;display:flex;flex-direction:column;gap:8px}
+.rag-ctrl-lbl{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.2em;color:rgba(25,216,255,.45);text-transform:uppercase}
+#rag-slider{-webkit-appearance:none;appearance:none;width:100%;height:2px;background:rgba(25,216,255,.15);border-radius:2px;outline:none;cursor:pointer}
+#rag-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:14px;height:14px;border-radius:50%;background:var(--blue);box-shadow:0 0 10px var(--blue);cursor:pointer}
+#rag-slider::-moz-range-thumb{width:14px;height:14px;border-radius:50%;border:none;background:var(--blue);box-shadow:0 0 10px var(--blue);cursor:pointer}
 
 /* ─── §5 SECURITY STRIP ─────────────────────── */
 .sec-strip{
@@ -239,16 +244,16 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
     <h1 class="h-h1" id="gH">Affinity<br>Gaia</h1>
     <div class="hero-services">
       <div class="hero-service" id="srv1">
-        <h3>On-Premise AI</h3>
-        <p>Your model, your hardware, your walls. Gaia runs entirely on your infrastructure with zero internet exposure.</p>
+        <h3>You Own It</h3>
+        <p>Most AI gives you access. Gaia gives you ownership. The intelligence your organization builds stays yours — on your hardware, under your control, forever.</p>
       </div>
       <div class="hero-service" id="srv2">
-        <h3>Massive RAG Libraries</h3>
-        <p>A building-wide intelligence with deep knowledge of every client, every file, and every case — always on hand.</p>
+        <h3>It Gets Smarter With You</h3>
+        <p>Gaia learns from every project your organization handles. The more you use it, the more it understands how your team thinks, operates, and delivers.</p>
       </div>
       <div class="hero-service" id="srv3">
-        <h3>Custom AI Integration</h3>
-        <p>Don't have Gaia yet? We build the tools that fit your workflow — Gaia-powered or cloud-based, we make it work.</p>
+        <h3>Your Data Never Leaves</h3>
+        <p>We improve Gaia over time without ever seeing your documents. What your organization knows stays with your organization — always.</p>
       </div>
     </div>
   </div>
@@ -257,17 +262,17 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 
 <!-- §2 PRODUCT PANEL -->
 <div class="product rv">
-  <div class="p-badge">On-Premise Intelligence</div>
+  <div class="p-badge">On-Premise AI</div>
   <div class="p-title">Affinity Gaia</div>
-  <div class="p-tag">Enterprise AI that never leaves your building.</div>
+  <div class="p-tag">AI that lives inside your walls — not a cloud service you rent, but an intelligence you own.</div>
 </div>
 
 <!-- §3 AIRGAP — full viewport -->
 <section class="airgap" id="section-airgap">
   <div class="airgap-grid"></div>
   <div class="airgap-over">
-    <h2 class="airgap-h rv">Zero internet.<br><em>Complete intelligence.</em></h2>
-    <p class="airgap-sub rv">Gaia is deployed entirely on your own hardware. No cloud calls, no external APIs, no data leaving the building — ever. Every query stays within your infrastructure, giving you full sovereign control over your AI system.</p>
+    <h2 class="airgap-h rv">Your building.<br><em>Your intelligence.</em></h2>
+    <p class="airgap-sub rv">Every other AI product routes your data through someone else's servers. Gaia runs entirely on hardware inside your office — no external connections, no third-party access, no exceptions. The same power that enterprise firms pay hundreds of thousands for, contained entirely within your four walls.</p>
   </div>
 </section>
 
@@ -275,12 +280,16 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 <section class="rag" id="section-rag">
   <div class="rag-cols">
     <div class="rag-text rv">
-      <div class="rag-label">Knowledge at Scale</div>
-      <h2 class="rag-h">Every document.<br>Every case.<br>Instantly searchable.</h2>
-      <p class="rag-body">Gaia is the natural habitat for massive Retrieval-Augmented Generation libraries. Ingest your entire organization's knowledge base — client files, internal documents, case histories — and turn it into a single, queryable intelligence. A building-wide personal assistant that knows everything your organization knows.</p>
+      <div class="rag-label">Always Learning</div>
+      <h2 class="rag-h">An AI that grows<br>smarter with<br>every project.</h2>
+      <p class="rag-body">Most AI tools forget everything the moment you close the window. Gaia remembers. It tracks every document, every decision, every outcome — and learns from the difference between what it suggested and what actually worked. The longer you use it, the better it knows your organization.</p>
     </div>
     <div class="rag-visual">
       <div class="rag-nodes" id="rag-nodes"></div>
+      <div class="rag-ctrl">
+        <span class="rag-ctrl-lbl">Network Growth</span>
+        <input type="range" id="rag-slider" min="0" max="100" value="0">
+      </div>
     </div>
   </div>
 </section>
@@ -290,7 +299,7 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
   <div class="rv">
     <div class="sec-label">Data Sovereignty</div>
     <h2 class="sec-h">Your data never<br>leaves the room.</h2>
-    <p class="sec-body" style="margin-top:1.2rem">Traditional AI services route every query through external servers. Gaia doesn't. Your prompts, your documents, your responses — all processed locally. Full compliance with even the strictest data governance requirements.</p>
+    <p class="sec-body" style="margin-top:1.2rem">Gaia improves over time without us ever reading your files. Updates happen on your hardware. Nothing sensitive is ever transmitted. Your clients' information, your organization's strategy, your work product — it all stays exactly where it belongs.</p>
   </div>
   <div class="sec-stats rv">
     <div class="sec-stat">
@@ -322,31 +331,35 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
 <!-- §7 MARQUEE + PROCESS -->
 <div class="mq">
   <div class="mq-t">
-    <span class="mq-i">Air-gapped AI</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">You own the intelligence</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Zero external connections</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Learns from every project</span><span class="mq-s"> ◈ </span>
     <span class="mq-i">On-premise deployment</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Massive RAG libraries</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Zero internet exposure</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Air-gapped AI</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Complete data privacy</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Built for your organization</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">You own the intelligence</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Zero external connections</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Learns from every project</span><span class="mq-s"> ◈ </span>
     <span class="mq-i">On-premise deployment</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Massive RAG libraries</span><span class="mq-s"> ◈ </span>
-    <span class="mq-i">Zero internet exposure</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Complete data privacy</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Built for your organization</span><span class="mq-s"> ◈ </span>
   </div>
 </div>
 <div class="process">
   <div class="ps rv">
     <div class="ps-n">01</div>
     <div class="ps-t">We Deploy.</div>
-    <div class="ps-b">Gaia is installed on your hardware — fully configured, air-gapped, and ready to run without a single external connection.</div>
+    <div class="ps-b">Gaia is installed directly on hardware inside your office. No cloud, no external servers, no data leaving your building. We handle the full setup from day one.</div>
   </div>
   <div class="ps rv">
     <div class="ps-n">02</div>
-    <div class="ps-t">We Configure.</div>
-    <div class="ps-b">We ingest your organization's knowledge base — documents, client files, internal data — and build your RAG library from the ground up.</div>
+    <div class="ps-t">Gaia Learns.</div>
+    <div class="ps-b">With every project your organization handles, Gaia gets more specific to how you work. It studies what you kept, what you changed, and what succeeded — and applies that knowledge to everything that comes next.</div>
   </div>
   <div class="ps rv">
     <div class="ps-n">03</div>
-    <div class="ps-t">We Evolve.</div>
-    <div class="ps-b">Your Gaia system grows with you. We continuously tune models, expand your libraries, and keep the system healthy as your needs change.</div>
+    <div class="ps-t">You Own It.</div>
+    <div class="ps-b">The intelligence Gaia builds belongs to your organization — not us. Everything it learns about how you operate stays in-house, yours to keep, grow, and control.</div>
   </div>
 </div>
 
@@ -357,8 +370,8 @@ footer{border-top:1px solid var(--line);padding:32px 48px;display:flex;align-ite
   </div>
   <div class="ct-txt rv-r">
     <div class="ct-label">Deploy Gaia</div>
-    <h2 class="ct-h">Bring AI<br>in-house.</h2>
-    <p class="ct-body">Ready to run a model that never touches the internet? Affinity builds and maintains your Gaia system from day one — fully local, fully yours.</p>
+    <h2 class="ct-h">Own your AI.<br>Own your data.</h2>
+    <p class="ct-body">We are not building a product. We are building a standard — one where the human is not replaced, the AI is not just a tool, and the institution owns what it builds. Ready to deploy?</p>
   </div>
 </section>
 
@@ -595,41 +608,113 @@ makeGaia(
   (function loop(){requestAnimationFrame(loop);const dt=clk.getDelta();ry+=dt*.08;core.rotation.y=ry;wire.rotation.y=ry*.65;r1.rotation.y=ry*.25;r2.rotation.y=-ry*.18;rdr.render(sc,cam);})();
 })();
 
-/* ── RAG NODES VISUAL ────────────────────────── */
+/* ── RAG NODES VISUAL — growing neural network w/ slider ── */
 (function(){
   const wrap=document.getElementById('rag-nodes');
   if(!wrap)return;
-  const count=12;
-  const positions=[];
-  for(let i=0;i<count;i++){
-    const node=document.createElement('div');
-    node.className='rag-node';
-    const x=15+Math.random()*70,y=15+Math.random()*70;
-    node.style.left=x+'%';node.style.top=y+'%';
-    node.style.animationDelay=(Math.random()*2)+'s';
-    wrap.appendChild(node);
-    positions.push({x,y,el:node});
-  }
-  // Draw SVG lines between nearby nodes
-  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-  svg.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none';
-  for(let i=0;i<positions.length;i++){
-    for(let j=i+1;j<positions.length;j++){
-      const dx=positions[i].x-positions[j].x,dy=positions[i].y-positions[j].y;
-      if(Math.sqrt(dx*dx+dy*dy)<28){
-        const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-        line.setAttribute('x1',positions[i].x+'%');line.setAttribute('y1',positions[i].y+'%');
-        line.setAttribute('x2',positions[j].x+'%');line.setAttribute('y2',positions[j].y+'%');
-        line.setAttribute('stroke','rgba(25,216,255,0.18)');line.setAttribute('stroke-width','1');
-        svg.appendChild(line);
-      }
-    }
-  }
-  wrap.appendChild(svg);
-  // Pulse animation
-  positions.forEach(({el},i)=>{
-    anime({targets:el,opacity:[0.7,0.2,0.7],scale:[1,1.4,1],duration:2000+i*300,loop:true,easing:'easeInOutSine',delay:i*200});
+  const cvs=document.createElement('canvas');
+  cvs.style.cssText='position:absolute;inset:0;width:100%;height:100%';
+  wrap.appendChild(cvs);
+  const ctx=cvs.getContext('2d');
+  let W,H;
+  function resize(){W=wrap.offsetWidth;H=wrap.offsetHeight;cvs.width=W;cvs.height=H;}
+  resize();
+  window.addEventListener('resize',resize);
+
+  const BLUE='rgba(25,216,255,';
+  const MAX=90;
+  const nodes=[],edges=[],signals=[];
+
+  function dst(a,b){return Math.sqrt((a.x-b.x)**2+(a.y-b.y)**2);}
+
+  // Pre-generate all nodes upfront
+  [{x:.5,y:.5},{x:.42,y:.42},{x:.58,y:.42}].forEach(s=>{
+    nodes.push({x:s.x*W,y:s.y*H,pulse:Math.random()*Math.PI*2});
   });
+  edges.push({a:0,b:1},{a:0,b:2},{a:1,b:2});
+  for(let i=3;i<MAX;i++){
+    const par=nodes[Math.floor(Math.random()*nodes.length)];
+    const ang=Math.random()*Math.PI*2;
+    // Increase spread as network grows — early nodes stay closer, later ones reach far
+    const spread=50+Math.random()*120+(i/MAX)*180;
+    const cx=W*.5,cy=H*.5;
+    const rx=par.x+Math.cos(ang)*spread;
+    const ry=par.y+Math.sin(ang)*spread;
+    // Less center-pull as the network matures, allowing full canvas coverage
+    const pull=Math.max(0.1, 0.55-(i/MAX)*0.5);
+    const x=Math.max(W*.03,Math.min(W*.97, rx*(1-pull)+cx*pull));
+    const y=Math.max(H*.03,Math.min(H*.97, ry*(1-pull)+cy*pull));
+    nodes.push({x,y,pulse:Math.random()*Math.PI*2});
+    nodes.slice(0,-1).map((n,j)=>({j,d:dst({x,y},n)}))
+      .sort((a,b)=>a.d-b.d).slice(0,3)
+      .forEach(({j})=>edges.push({a:i,b:j}));
+  }
+
+  // Slider
+  let progress=0,dragging=false;
+  const slider=document.getElementById('rag-slider');
+  if(slider){
+    slider.addEventListener('mousedown',()=>dragging=true);
+    slider.addEventListener('touchstart',()=>dragging=true,{passive:true});
+    slider.addEventListener('mouseup',()=>dragging=false);
+    slider.addEventListener('touchend',()=>dragging=false);
+    slider.addEventListener('input',()=>{progress=+slider.value;});
+  }
+
+  let lastSig=0;
+  const T0=Date.now();
+  (function loop(){
+    requestAnimationFrame(loop);
+    const now=Date.now(),t=(now-T0)/1000;
+    if(W!==wrap.offsetWidth||H!==wrap.offsetHeight)resize();
+    ctx.clearRect(0,0,W,H);
+
+    // Auto-advance
+    if(!dragging&&progress<100){
+      progress=Math.min(100,progress+0.35);
+      if(slider)slider.value=progress;
+    }
+
+    const vis=Math.ceil((progress/100)*MAX);
+    const visEdges=edges.filter(e=>e.a<vis&&e.b<vis);
+
+    // Launch signals
+    if(now-lastSig>500+Math.random()*700&&visEdges.length>2){
+      const e=visEdges[Math.floor(Math.random()*visEdges.length)];
+      signals.push({e,t:0,spd:.007+Math.random()*.005,dir:Math.random()>.5?1:-1});
+      lastSig=now;
+    }
+
+    // Edges
+    visEdges.forEach(e=>{
+      const a=nodes[e.a],b=nodes[e.b];
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);
+      ctx.strokeStyle=BLUE+'.22)';ctx.lineWidth=1;ctx.stroke();
+    });
+
+    // Signals
+    for(let i=signals.length-1;i>=0;i--){
+      const s=signals[i];s.t+=s.spd;
+      if(s.t>1){signals.splice(i,1);continue;}
+      const a=nodes[s.e.a],b=nodes[s.e.b];
+      const pr=s.dir<0?1-s.t:s.t;
+      const sx=a.x+(b.x-a.x)*pr,sy=a.y+(b.y-a.y)*pr;
+      const fade=Math.sin(s.t*Math.PI);
+      const g=ctx.createRadialGradient(sx,sy,0,sx,sy,9);
+      g.addColorStop(0,BLUE+(fade*.95)+')');g.addColorStop(1,BLUE+'0)');
+      ctx.beginPath();ctx.arc(sx,sy,9,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+    }
+
+    // Nodes
+    nodes.slice(0,vis).forEach(n=>{
+      const pulse=.55+.45*Math.sin(t*1.8+n.pulse);
+      const r=2.5+1.5*Math.sin(t*2.2+n.pulse);
+      const g=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*4);
+      g.addColorStop(0,BLUE+(pulse*.65)+')');g.addColorStop(1,BLUE+'0)');
+      ctx.beginPath();ctx.arc(n.x,n.y,r*4,0,Math.PI*2);ctx.fillStyle=g;ctx.fill();
+      ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);ctx.fillStyle=BLUE+pulse+')';ctx.fill();
+    });
+  })();
 })();
 
 /* ── SCROLL REVEALS ────────────────────────── */
