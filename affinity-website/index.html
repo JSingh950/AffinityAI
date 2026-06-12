@@ -177,12 +177,6 @@
             height: 100%;
         }
 
-        #mini-star-canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
         /* Subtle corner brackets on the mobius card */
         .division-visual::before,
         .division-visual::after {
@@ -236,8 +230,8 @@
         .team-label { font-family: "DM Mono", monospace; font-size: 0.7rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.3); text-transform: uppercase; margin-bottom: 1rem; }
         .team-head { font-family: "Syne", sans-serif; font-size: clamp(2rem, 4vw, 3.2rem); color: var(--cream); margin-bottom: 3rem; line-height: 1.1; }
         .team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-        .team-card { display: block; text-decoration: none; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.75rem 2rem; border-radius: 4px; transition: background 0.25s, border-color 0.25s; }
-        .team-card:hover { background: rgba(255,255,255,0.055); border-color: rgba(198,167,94,0.35); }
+        .team-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); padding: 1.75rem 2rem; border-radius: 4px; transition: background 0.25s; }
+        .team-card:hover { background: rgba(255,255,255,0.055); }
         .team-card-name { font-family: "Syne", sans-serif; font-size: 1.05rem; color: var(--cream); margin-bottom: 0.4rem; }
         .team-card-role { font-family: "DM Mono", monospace; font-size: 0.68rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); text-transform: uppercase; }
 
@@ -303,7 +297,16 @@
                             <p class="panel-label">01</p>
                             <h2>An Artificial Intelligence Model that never touches the internet.</h2>
                             <hr class="panel-rule">
-                            <p>Affinity Gaia is hosted entirely on-premises — your hardware, your network, your walls. With no external internet connection, your data never leaves the building. Every query, every response, every document stays fully contained within your infrastructure, giving you enterprise-grade AI power with complete security and zero exposure.</p>
+                            <p>Affinity helps companies stay current with the latest AI tools — optimizing your business to the ever-changing landscape so you can go head-to-head with industry giants and their millions in funding.</p>
+                            <div class="hero-badges">
+                                <span>AI TOOLS</span>
+                                <span>AUTOMATION</span>
+                                <span>GROWTH</span>
+                            </div>
+                            <div class="hero-actions">
+                                <a class="cta-button" href="pages/ai.html">Explore Affinity AI →</a>
+                                <a class="cta-button ghost" href="pages/photos.html">See Affinity Star</a>
+                            </div>
                         </div>
                     </article>
 
@@ -318,7 +321,17 @@
                         <p class="panel-label">03</p>
                         <h2>Customized consulting for all your AI needs</h2>
                         <hr class="panel-rule">
-                        <p>Already running a Gaia system? We keep it healthy — tuning models, expanding your RAG libraries, and evolving it as your organization grows. No Gaia? No problem. Affinity AI builds custom AI tools tailored to your workflows, whether that means integrating Gaia, leveraging cloud AI services, or combining both. Whatever the stack, we engineer solutions that actually fit your business.</p>
+                        <p class="metric-wrap">
+                            <span id="coverage-counter">0</span><span>%</span>
+                        </p>
+                        <p>We target high process automation coverage fast — cutting operational overhead so your team focuses on growth, not maintenance.</p>
+                    </article>
+
+                    <article class="panel" data-panel-index="4">
+                        <p class="panel-label">The Team</p>
+                        <h2>Six Builders. One Vision.</h2>
+                        <hr class="panel-rule">
+                        <p>Affinity is built by a founding team combining AI engineering, creative direction, sound production, and brand strategy — all working toward one goal: giving your business the edge it deserves.</p>
                     </article>
                 </div>
 
@@ -328,24 +341,30 @@
         </section>
 
         <div class="page-content">
-            <section class="section section-build" id="what-we-build" aria-label="Affinity services and capabilities">
-                <div class="build-cards-row">
-                    <article class="build-card reveal">
-                        <h3>AI Landscape Updates</h3>
-                        <p>We monitor and deploy the latest AI automation tools the moment they matter — keeping your business efficient and ahead while competitors scramble to catch up.</p>
-                    </article>
-                    <article class="build-card reveal">
-                        <h3>Compete at Any Scale</h3>
-                        <p>Give small and mid-size businesses a competitive advantage with scalable AI systems that punch far above their weight class against well-funded industry giants.</p>
-                    </article>
-                    <article class="build-card reveal">
-                        <h3>Air-Gapped AI Deployment</h3>
-                        <p>Affinity Gaia runs entirely on your own hardware with zero internet exposure — enterprise-grade intelligence with complete data sovereignty and no external dependencies.</p>
-                    </article>
-                    <article class="build-card reveal">
-                        <h3>Massive RAG Libraries</h3>
-                        <p>Turn your organization's entire knowledge base into a single queryable intelligence. Gaia ingests every document, client file, and case history — making it instantly searchable for your whole team.</p>
-                    </article>
+            <section class="section section-build" id="what-we-build">
+                <div class="build-layout">
+                    <div class="build-left">
+                        <p class="build-number">02</p>
+                        <h2>Two Divisions.<br>One Edge.</h2>
+                    </div>
+                    <div class="build-right">
+                        <article class="build-card reveal">
+                            <h3>AI Landscape Updates</h3>
+                            <p>We monitor and deploy the latest AI tools the moment they matter — your business never falls behind while competitors scramble to catch up.</p>
+                        </article>
+                        <article class="build-card reveal">
+                            <h3>Compete at Any Scale</h3>
+                            <p>Level the playing field against well-funded industry giants with systems that punch far above their weight class.</p>
+                        </article>
+                        <article class="build-card reveal">
+                            <h3>Data-Driven Marketing</h3>
+                            <p>Affinity Star uses live promotional trend data from our AI backend to keep your brand visible exactly where it matters most.</p>
+                        </article>
+                        <article class="build-card reveal">
+                            <h3>Front-End Relevance</h3>
+                            <p>From social media to live events and pro photography, Affinity Star keeps your brand sharp, consistent, and top of mind.</p>
+                        </article>
+                    </div>
                 </div>
             </section>
 
@@ -375,8 +394,8 @@
                         <p>Affinity Gaia is an on-premise AI model that never touches the internet — purpose-built for organizations that need enterprise-grade intelligence with absolute data sovereignty and no cloud exposure.</p>
                         <a class="cta-button" href="pages/gaia.html">Explore Gaia →</a>
                     </div>
-                    <div class="division-visual" aria-label="Affinity Gaia visualization" style="position:relative;overflow:hidden;">
-                        <canvas id="mini-star-canvas"></canvas>
+                    <div class="division-visual" style="display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);">
+                        <div class="rotating-square" aria-hidden="true"></div>
                     </div>
                 </div>
             </section>
@@ -406,30 +425,30 @@
                     <p class="team-label reveal">// the team</p>
                     <h2 class="team-head reveal">The People<br>Behind Affinity.</h2>
                     <div class="team-grid">
-                        <a class="team-card reveal" href="https://www.linkedin.com/in/cian-joseph/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
+                        <article class="team-card reveal">
                             <p class="team-card-name">Cian Joseph</p>
                             <p class="team-card-role">Founding Team</p>
-                        </a>
-                        <a class="team-card reveal" href="https://www.linkedin.com/in/mateja-rapaic-ba2427221/" target="_blank" rel="noopener noreferrer">
-                            <p class="team-card-name">Mateja Rapaic</p>
+                        </article>
+                        <article class="team-card reveal">
+                            <p class="team-card-name">Mateja Raipac</p>
                             <p class="team-card-role">Founding Team</p>
-                        </a>
-                        <a class="team-card reveal" href="https://www.linkedin.com/in/jeeyanmhajan/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
+                        </article>
+                        <article class="team-card reveal">
                             <p class="team-card-name">Jeeyan Mhajan</p>
                             <p class="team-card-role">Founding Team</p>
-                        </a>
-                        <a class="team-card reveal" href="https://www.linkedin.com/in/derric-sherwin-20a9a6343/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
+                        </article>
+                        <article class="team-card reveal">
                             <p class="team-card-name">Derric Sherwin</p>
                             <p class="team-card-role">Founding Team</p>
-                        </a>
-                        <a class="team-card reveal" href="https://www.linkedin.com/in/eric-frenkel/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
-                            <p class="team-card-name">Eric Frenkel</p>
+                        </article>
+                        <article class="team-card reveal">
+                            <p class="team-card-name">Eric Frenkle</p>
                             <p class="team-card-role">Founding Team</p>
-                        </a>
-                        <a class="team-card reveal" href="https://www.linkedin.com/in/lakshay-john-872b91351/?utm_source=share_via&utm_content=profile&utm_medium=member_ios" target="_blank" rel="noopener noreferrer">
+                        </article>
+                        <article class="team-card reveal">
                             <p class="team-card-name">Lakshay John</p>
                             <p class="team-card-role">Founding Team</p>
-                        </a>
+                        </article>
                     </div>
                 </div>
             </section>
@@ -853,90 +872,6 @@
             renderer.render(scene, camera);
         }
         requestAnimationFrame(animate);
-    })();
-    </script>
-
-    <script>
-    // ── Mini Gaia — Division Gaia card ────────────────────────────────────
-    (function () {
-        const canvas = document.getElementById('mini-star-canvas');
-        if (!canvas || typeof THREE === 'undefined') return;
-
-        const container = canvas.parentElement;
-        let W = container.offsetWidth || 280;
-        let H = container.offsetHeight || 280;
-        canvas.style.position = 'absolute';
-        canvas.style.top = '0';
-        canvas.style.left = '0';
-
-        const rdr = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        rdr.setSize(W, H);
-        rdr.setPixelRatio(Math.min(devicePixelRatio, 2));
-        rdr.toneMapping = THREE.ACESFilmicToneMapping;
-        rdr.toneMappingExposure = 1.1;
-
-        const sc = new THREE.Scene();
-        const cam = new THREE.PerspectiveCamera(38, W / H, 0.1, 200);
-        cam.position.set(0, 0, 3.2);
-        cam.lookAt(0, 0, 0);
-
-        // Environment
-        (function buildEnv() {
-            const sz = 256, c = document.createElement('canvas');
-            c.width = sz * 4; c.height = sz * 2;
-            const x = c.getContext('2d');
-            x.fillStyle = '#05070E'; x.fillRect(0, 0, c.width, c.height);
-            const s1 = x.createRadialGradient(sz * 1.4, sz * .45, 0, sz * 1.4, sz * .45, sz * .9);
-            s1.addColorStop(0, 'rgba(25,216,255,0.9)'); s1.addColorStop(.4, 'rgba(20,100,230,.28)'); s1.addColorStop(1, 'rgba(0,0,0,0)');
-            x.fillStyle = s1; x.fillRect(0, 0, c.width, c.height);
-            const t = new THREE.CanvasTexture(c);
-            t.mapping = THREE.EquirectangularReflectionMapping;
-            sc.environment = t;
-        })();
-
-        // Gaia sphere
-        const coreMat = new THREE.MeshPhysicalMaterial({
-            color: 0x041230, emissive: 0x082060, emissiveIntensity: 0.55,
-            metalness: 0.4, roughness: 0.35, clearcoat: 0.9, clearcoatRoughness: 0.08,
-            reflectivity: 1, envMapIntensity: 2.5
-        });
-        const core = new THREE.Mesh(new THREE.SphereGeometry(0.85, 48, 48), coreMat);
-        sc.add(core);
-
-        // Wireframe overlay
-        sc.add(new THREE.Mesh(new THREE.IcosahedronGeometry(0.89, 3),
-            new THREE.MeshBasicMaterial({ color: 0x19D8FF, wireframe: true, transparent: true, opacity: 0.10 })));
-
-        // Orbital rings
-        function mkRing(inner, outer, rx, rz, op) {
-            const r = new THREE.Mesh(new THREE.RingGeometry(inner, outer, 64),
-                new THREE.MeshBasicMaterial({ color: 0x19D8FF, side: THREE.DoubleSide, transparent: true, opacity: op, blending: THREE.AdditiveBlending, depthWrite: false }));
-            r.rotation.x = rx; r.rotation.z = rz; sc.add(r); return r;
-        }
-        const ring1 = mkRing(1.1, 1.12, Math.PI / 2, 0, 0.4);
-        const ring2 = mkRing(1.35, 1.37, Math.PI / 3, 0.4, 0.25);
-
-        // Lights
-        sc.add(new THREE.AmbientLight(0x020610, 6));
-        const kL = new THREE.PointLight(0x19D8FF, 18, 20); kL.position.set(-3.5, 4.5, 4.5); sc.add(kL);
-        sc.add(new THREE.PointLight(0x00C0FF, 9, 14)).position.set(0.5, -1, -5);
-
-        window.addEventListener('resize', function () {
-            W = container.offsetWidth; H = container.offsetHeight;
-            cam.aspect = W / H; cam.updateProjectionMatrix();
-            rdr.setSize(W, H);
-        });
-
-        const clock = new THREE.Clock(); let ry = 0;
-        (function loop() {
-            requestAnimationFrame(loop);
-            const dt = clock.getDelta();
-            ry += dt * 0.45;
-            core.rotation.y = ry;
-            ring1.rotation.y = ry * 0.25;
-            ring2.rotation.y = -ry * 0.18;
-            rdr.render(sc, cam);
-        })();
     })();
     </script>
 </body>
