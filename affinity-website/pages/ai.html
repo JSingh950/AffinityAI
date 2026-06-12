@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="/css/header.css">
 
     <style>
         :root {
@@ -700,13 +701,16 @@
         <span id="scroll-progress"></span>
     </div>
 
-    <nav class="site-nav" aria-label="Main navigation">
-        <a class="brand" href="../index.html">AFFINITY</a>
-        <div class="nav-links">
-            <a href="ai.html">AI</a>
-            <span aria-hidden="true">·</span>
-            <a href="gaia.html">GAIA</a>
-        </div>
+    <!-- ===== SHARED SITE HEADER · keep identical on every page (styled by /css/header.css) ===== -->
+    <nav class="site-nav" id="nav" aria-label="Main navigation">
+      <a class="brand" href="/index.html">AFFINITY</a>
+      <div class="nav-links">
+        <a href="/pages/ai.html">AI</a>
+        <span aria-hidden="true">·</span>
+        <a href="/pages/gaia.html">GAIA</a>
+        <span aria-hidden="true">·</span>
+        <a href="/pages/3dc.html">3DC</a>
+      </div>
     </nav>
 
     <main>
@@ -818,58 +822,6 @@
                             <span class="build-line" style="--d:0.4s">→ mapping workflow bottlenecks...</span>
                             <span class="build-line" style="--d:1.2s">→ identifying automation targets...</span>
                             <span class="build-line done" style="--d:2.0s">→ solution.draft — saved</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <section class="section ui-showcase" id="ui">
-            <div class="section-inner">
-                <h2 class="section-heading reveal">Built To Be Used.</h2>
-                <p class="section-sub reveal">Interfaces designed for real operators — not engineers.</p>
-                <div class="ui-frame reveal">
-                    <aside class="ui-sidebar">
-                        <h4>AFFINITY AI</h4>
-                        <div class="ui-nav">
-                            <button class="active" type="button" data-panel="overview">Overview</button>
-                            <button type="button" data-panel="rag">RAG Query</button>
-                            <button type="button" data-panel="pipelines">Pipelines</button>
-                            <button type="button" data-panel="reports">Reports</button>
-                        </div>
-                    </aside>
-                    <div class="ui-main">
-                        <!-- Overview panel -->
-                        <div id="panel-overview">
-                            <div class="stat-row" style="display:block; padding: 0.75rem 0 1rem;">
-                                <p class="stat-label" style="font-size:0.75rem; letter-spacing:0.1em; color: rgba(245,245,245,0.45); margin-bottom:0.4rem;">// TRY IT YOURSELF</p>
-                                <p style="font-size:1rem; font-weight:600; color:#f5f5f5; line-height:1.5;">Ask Affinity anything about our services, process, or team — switch to the <span style="color:#c6a75e;">RAG Query</span> tab and start a conversation.</p>
-                            </div>
-                            <div class="chat-window" style="height:200px;pointer-events:none;opacity:0.5;">
-                                <div class="chat-messages" style="display:flex;flex-direction:column;gap:0.8rem;padding:1rem;">
-                                    <div class="chat-bubble ai">What services does Affinity AI offer?</div>
-                                    <div class="chat-bubble user">Affinity AI builds custom RAG platforms, automation pipelines, and AI-driven web systems — tailored to your business operations.</div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- RAG Query panel -->
-                        <div id="panel-rag" style="display:none;">
-                            <div class="chat-window" id="rag-chat">
-                                <div class="chat-messages" id="chat-messages">
-                                    <p class="chat-empty" id="chat-empty">// ask anything about Affinity</p>
-                                </div>
-                                <div class="chat-input-bar">
-                                    <input class="chat-input" id="chat-input" type="text" placeholder="Ask a question..." autocomplete="off" />
-                                    <button class="chat-send-btn" id="chat-send">Send</button>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Placeholder panels -->
-                        <div id="panel-pipelines" style="display:none;">
-                            <p class="chat-empty" style="padding:2rem 0;">// pipelines coming soon</p>
-                        </div>
-                        <div id="panel-reports" style="display:none;">
-                            <p class="chat-empty" style="padding:2rem 0;">// reports coming soon</p>
                         </div>
                     </div>
                 </div>
@@ -1332,101 +1284,6 @@
     </script>
 
     <script>
-        // ── Sidebar tab switching ────────────────────────────────────────────
-        (function () {
-            const btns = document.querySelectorAll('.ui-nav button[data-panel]');
-            btns.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    btns.forEach(function (b) { b.classList.remove('active'); });
-                    btn.classList.add('active');
-                    document.querySelectorAll('.ui-main > div[id^="panel-"]').forEach(function (p) {
-                        p.style.display = 'none';
-                    });
-                    const target = document.getElementById('panel-' + btn.dataset.panel);
-                    if (target) target.style.display = '';
-                });
-            });
-        })();
-
-        // ── RAG Chat Integration ─────────────────────────────────────────────
-        (function () {
-            const API = 'http://localhost:8000';
-            const messagesEl = document.getElementById('chat-messages');
-            const inputEl    = document.getElementById('chat-input');
-            const sendBtn    = document.getElementById('chat-send');
-            const emptyNote  = document.getElementById('chat-empty');
-            const history    = [];
-
-            function scrollBottom() {
-                messagesEl.scrollTop = messagesEl.scrollHeight;
-            }
-
-            function addBubble(role, text) {
-                if (emptyNote) emptyNote.remove();
-                const div = document.createElement('div');
-                div.className = 'chat-bubble ' + (role === 'user' ? 'user' : 'ai');
-                div.textContent = text;
-                messagesEl.appendChild(div);
-                scrollBottom();
-                return div;
-            }
-
-            function setLoading(on) {
-                sendBtn.disabled = on;
-                inputEl.disabled = on;
-            }
-
-            async function sendMessage() {
-                const text = inputEl.value.trim();
-                if (!text) return;
-
-                addBubble('user', text);
-                history.push({ role: 'user', content: text });
-                inputEl.value = '';
-                setLoading(true);
-
-                // typing indicator
-                const typing = document.createElement('div');
-                typing.className = 'chat-bubble typing';
-                typing.textContent = '...';
-                messagesEl.appendChild(typing);
-                scrollBottom();
-
-                try {
-                    const res = await fetch(API + '/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ message: text, history: history.slice(0, -1), stream: false })
-                    });
-
-                    typing.remove();
-
-                    if (!res.ok) {
-                        const err = await res.json().catch(() => ({}));
-                        addBubble('ai', 'Error: ' + (err.detail || res.statusText));
-                        return;
-                    }
-
-                    const data = await res.json();
-                    const reply = data.answer || data.response || data.content || JSON.stringify(data);
-                    addBubble('ai', reply);
-                    history.push({ role: 'assistant', content: reply });
-
-                } catch (e) {
-                    typing.remove();
-                    addBubble('ai', 'Could not reach backend — is it running on port 8000?');
-                } finally {
-                    setLoading(false);
-                    inputEl.focus();
-                }
-            }
-
-            sendBtn.addEventListener('click', sendMessage);
-            inputEl.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-            });
-
-        })();
     </script>
 </body>
 </html>

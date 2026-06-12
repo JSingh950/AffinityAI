@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────
+#  Secret guard — blocks committing keys, credentials, env files.
+#  Installed via:  git config core.hooksPath .githooks
+#  Bypass once (use sparingly):  git commit --no-verify
+# ─────────────────────────────────────────────────────────────
+set -u
+RED=$'\033[31m'; YEL=$'\033[33m'; NC=$'\033[0m'
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+fail=0
+
+# 1) Block sensitive filenames (allow *.example / *.sample templates)
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  base=$(basename "$f")
+  case "$base" in
+    .env.example|.env.sample|*.example|*.sample) continue ;;
+  esac
+  case "$base" in
+    .env|.env.*|*.pem|*.key|*.pfx|*.p12|.dev.vars|id_rsa|id_ed25519|*.keystore)
+      echo "${RED}✗ Refusing to commit sensitive file:${NC} $f"
+      fail=1 ;;
+  esac
+done <<< "$staged"
+
+# 2) Scan ADDED lines for secret-looking content
+patterns='(-----BEGIN [A-Z ]*PRIVATE KEY-----|AKIA[0-9A-Z]{16}|[A-Za-z0-9_]*(secret|token|api[_-]?key|access[_-]?key|password|client[_-]?secret)[A-Za-z0-9_]*["'"'"' ]*[:=]["'"'"' ]*[A-Za-z0-9/+_-]{20,})'
+excl='REPLACE_WITH|YOUR[-_]|example|placeholder|process\.env|env\.[A-Za-z]|import\.meta|wrangler secret|secret put|xxxx+|\$\{|<[a-zA-Z]|changeme|dummy|sample|test[_-]?key'
+
+hits=$(git diff --cached -U0 \
+  | grep -E '^\+' | grep -vE '^\+\+\+' \
+  | grep -iE "$patterns" \
+  | grep -viE "$excl")
+
+if [ -n "$hits" ]; then
+  echo "${RED}✗ Possible secret in staged changes:${NC}"
+  echo "$hits" | sed 's/^/   /'
+  fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+  echo ""
+  echo "${YEL}Commit blocked by the secret guard.${NC}"
+  echo "Move the value to a Worker secret / .env (gitignored) instead."
+  echo "If this is genuinely a false positive:  git commit --no-verify"
+  exit 1
+fi
+exit 0

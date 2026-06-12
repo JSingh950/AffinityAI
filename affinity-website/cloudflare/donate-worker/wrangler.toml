@@ -1,0 +1,25 @@
+name = "affinity-donate"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# --- R2 bucket that stores the donated .e57 files ---
+[[r2_buckets]]
+binding = "SCANS"
+bucket_name = "affinity-scans"
+
+# --- D1 database that stores donor contact info / submission metadata ---
+[[d1_databases]]
+binding = "DB"
+database_name = "affinity-donations"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+# Lock this to your site origin in production, e.g. "https://affinityai.co"
+ALLOWED_ORIGIN = "*"
+R2_BUCKET = "affinity-scans"
+R2_ACCOUNT_ID = "REPLACE_WITH_YOUR_CLOUDFLARE_ACCOUNT_ID"
+
+# Secrets (do NOT put these here — set them with wrangler):
+#   wrangler secret put R2_ACCESS_KEY_ID
+#   wrangler secret put R2_SECRET_ACCESS_KEY
+# Create the key pair under: R2 → Manage R2 API Tokens → Create API Token (Object Read & Write)

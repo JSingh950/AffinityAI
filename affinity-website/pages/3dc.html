@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Affinity 3Deconstructor · AI Point Cloud Segmentation</title>
+<meta name="description" content="Affinity 3Deconstructor (3DC) is an AI tool that labels every point in a 3D scan — identifying floors, walls, ceilings, furniture, and objects through instance segmentation.">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#080B09;
+  --white:#EEF2EE;
+  --cream:#fdf1e0;
+  --muted:rgba(238,242,238,0.44);
+  --faint:rgba(238,242,238,0.12);
+  --line:rgba(238,242,238,0.08);
+  --green:#34D399;
+  --gap:3px;
+}
+html{scroll-behavior:smooth;scroll-padding-top:88px}
+body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;font-weight:300;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+
+/* ─── NAV ──────────────────────────────────── */
+.site-nav{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:1.15rem 2.5rem;background:linear-gradient(180deg,rgba(3,6,4,0.88) 0%,transparent 100%);backdrop-filter:blur(4px);opacity:0}
+.brand{font-family:"Syne",sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:0.2em;color:var(--cream);text-decoration:none}
+.nav-links{display:flex;align-items:center;gap:1.25rem}
+.nav-links a{font-family:"DM Mono",monospace;font-size:0.75rem;letter-spacing:0.15em;color:rgba(255,255,255,0.7);text-decoration:none;transition:color 0.2s}
+.nav-links a:hover{color:var(--cream)}
+.nav-links a[href*="ai"]:hover{color:#8b0000}
+.nav-links a[href*="gaia"]:hover{color:#19D8FF}
+.nav-links a[href*="3dc"]:hover{color:var(--green)}
+.nav-links span{color:rgba(255,255,255,0.25);font-size:0.7rem}
+
+/* ─── §1 HERO ─────────────────────────────── */
+.hero{position:relative;width:100%;height:100vh;min-height:740px;overflow:hidden}
+.hero-inner{position:absolute;inset:0;display:flex;align-items:center}
+#hero-canvas{position:absolute;inset:0;z-index:0;width:100%!important;height:100%!important}
+.hero-vignette{
+  position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:
+    linear-gradient(to bottom,rgba(8,11,9,.6) 0%,transparent 10%),
+    linear-gradient(to right,rgba(8,11,9,.97) 0%,rgba(8,11,9,.82) 42%,rgba(8,11,9,.2) 62%,transparent 74%)
+}
+.hero-text{
+  position:relative;z-index:2;
+  width:min(660px,62%);
+  padding:0 2rem 0 5.5rem;
+  display:flex;flex-direction:column;gap:20px;
+  text-align:left;
+}
+.h-eye{font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--green);opacity:0}
+.h-h1{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(34px,5vw,62px);line-height:1;letter-spacing:-.02em;color:var(--cream);opacity:0}
+.h-blurb{font-size:15px;line-height:1.72;color:rgba(238,242,238,0.74);max-width:500px;opacity:0}
+.h-early{
+  display:flex;align-items:flex-start;gap:11px;
+  font-family:"DM Mono",monospace;font-size:12px;line-height:1.6;letter-spacing:.02em;
+  color:var(--green);max-width:460px;opacity:0;
+}
+.h-early .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green);margin-top:5px;flex-shrink:0}
+.hero-cta-block{display:flex;align-items:center;gap:30px;margin-top:14px;flex-wrap:wrap;opacity:0}
+.hero-counter{display:flex;flex-direction:column;position:relative;padding-right:30px}
+.hero-counter::after{content:'';position:absolute;right:0;top:6px;bottom:6px;width:1px;background:rgba(52,211,153,0.25)}
+.counter-num{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(52px,7.5vw,96px);line-height:.86;color:var(--green);letter-spacing:-.02em;text-shadow:0 0 50px rgba(52,211,153,0.25)}
+.counter-label{font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+.donate-big{
+  font-family:"DM Mono",monospace;font-size:0.82rem;letter-spacing:.12em;text-transform:uppercase;font-weight:500;
+  padding:1.05rem 2.3rem;border-radius:999px;border:1px solid var(--green);
+  background:var(--green);color:#052013;cursor:pointer;
+  transition:background .2s,transform .15s,box-shadow .2s;
+}
+.donate-big:hover{background:#2bbe87;transform:translateY(-1px);box-shadow:0 8px 30px rgba(52,211,153,0.3)}
+.hero-legend{
+  position:absolute;right:48px;bottom:42px;z-index:2;
+  display:flex;flex-direction:column;gap:9px;opacity:0;
+}
+/* CSS-driven entrance — content stays visible even if JS/anime doesn't run */
+@keyframes heroRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.site-nav{animation:heroRise .6s ease .15s both}
+.h-eye{animation:heroRise .7s cubic-bezier(.4,0,.2,1) .15s both}
+.h-h1{animation:heroRise .7s cubic-bezier(.4,0,.2,1) .28s both}
+.h-blurb{animation:heroRise .7s cubic-bezier(.4,0,.2,1) .40s both}
+.h-early{animation:heroRise .7s cubic-bezier(.4,0,.2,1) .52s both}
+.hero-cta-block{animation:heroRise .7s cubic-bezier(.4,0,.2,1) .62s both}
+.hero-legend{animation:heroRise .7s cubic-bezier(.4,0,.2,1) .80s both}
+.hero-legend .lg-title{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+
+/* shared legend item */
+.seg-item{display:flex;align-items:center;gap:9px;font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.08em;color:var(--muted)}
+.seg-dot{width:9px;height:9px;border-radius:2px;box-shadow:0 0 8px currentColor}
+
+/* ─── PARTNERS STRIP ────────────────────────── */
+.partners{border-top:1px solid var(--line);background:#070a08;padding:34px 60px}
+.partners-inner{width:min(1200px,100%);margin:0 auto;display:flex;align-items:center;justify-content:center;gap:24px 44px;flex-wrap:wrap}
+.partners-label{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted)}
+.partners-row{display:flex;align-items:center;gap:18px 40px;flex-wrap:wrap;justify-content:center}
+.partner{display:flex;align-items:center;gap:40px;font-family:"Syne",sans-serif;font-weight:700;font-size:clamp(14px,1.5vw,19px);letter-spacing:.01em;color:rgba(238,242,238,0.82);transition:color .2s}
+.partner:hover{color:var(--green)}
+.partner::after{content:'◈';color:var(--green);opacity:.3;font-size:0.7em}
+.partner:last-child::after{display:none}
+
+/* ─── §2 PRODUCT PANEL ─────────────────────── */
+.product{
+  border-top:1px solid var(--line);
+  padding:80px 60px 72px;
+  display:flex;flex-direction:column;gap:14px;
+  text-decoration:none;color:inherit;
+}
+.p-badge{font-size:9px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--green);display:flex;align-items:center;gap:8px}
+.p-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);flex-shrink:0}
+.p-title{font-family:"Syne",sans-serif;font-weight:400;font-size:clamp(30px,4vw,52px);letter-spacing:-.01em;line-height:1.05}
+.p-tag{font-family:"Syne",sans-serif;font-style:italic;font-size:17px;line-height:1.5;color:var(--muted);max-width:560px}
+
+/* ─── §3 PROBLEM (raw scan) ─────────────────── */
+.airgap{
+  position:relative;height:100vh;min-height:520px;overflow:hidden;
+  display:flex;align-items:flex-end;
+  border-top:1px solid var(--line);
+  background:#060B08;
+}
+#raw-canvas{position:absolute;inset:0;z-index:0;width:100%!important;height:100%!important}
+.airgap-grid{
+  position:absolute;inset:0;z-index:1;
+  background-image:
+    linear-gradient(rgba(120,130,124,0.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(120,130,124,0.035) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse at center,rgba(0,0,0,0.5) 0%,transparent 70%);
+}
+.airgap-over{
+  position:relative;z-index:2;
+  width:100%;padding:0 60px 72px;
+  background:linear-gradient(to top,rgba(8,11,9,.98) 0%,rgba(8,11,9,.4) 45%,transparent 100%)
+}
+.airgap-h{font-family:"Syne",sans-serif;font-weight:300;font-size:clamp(36px,5.5vw,78px);line-height:1.04;letter-spacing:-.025em}
+.airgap-h em{font-style:italic;color:var(--green);opacity:.85}
+.airgap-sub{font-size:14px;line-height:1.75;color:var(--muted);max-width:540px;margin-top:1.4rem}
+
+/* ─── §4 INSTANCE SEGMENTATION ──────────────── */
+.rag{border-top:1px solid var(--line)}
+.rag-cols{display:grid;grid-template-columns:1fr 1fr;gap:var(--gap)}
+.rag-text{padding:80px 60px;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.rag-label{font-size:9px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--green)}
+.rag-h{font-family:"Syne",sans-serif;font-weight:300;font-size:clamp(26px,3.8vw,52px);line-height:1.08;letter-spacing:-.02em}
+.rag-body{font-size:13px;line-height:1.75;color:var(--muted);max-width:380px}
+.rag-visual{
+  position:relative;overflow:hidden;min-height:460px;
+  background:
+    radial-gradient(ellipse at 60% 40%,rgba(52,211,153,0.10) 0%,transparent 55%),
+    radial-gradient(ellipse at 25% 75%,rgba(96,165,250,0.10) 0%,transparent 50%),
+    #06090F;
+}
+#seg-canvas{position:absolute;inset:0;width:100%;height:100%}
+.seg-cap{position:absolute;left:24px;bottom:22px;z-index:2;font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.seg-cap b{color:var(--green);font-weight:500}
+
+/* ─── §5 CAPABILITY STRIP ───────────────────── */
+.sec-strip{
+  border-top:1px solid var(--line);
+  padding:104px 60px;
+  display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;
+  background:
+    radial-gradient(ellipse at 80% 50%,rgba(52,211,153,0.05) 0%,transparent 60%),
+    #070F0B;
+}
+.sec-label{font-size:9px;font-weight:500;letter-spacing:.26em;text-transform:uppercase;color:var(--green);margin-bottom:1.1rem}
+.sec-h{font-family:"Syne",sans-serif;font-weight:300;font-size:clamp(26px,3.5vw,48px);line-height:1.08;letter-spacing:-.02em}
+.sec-body{font-size:13px;line-height:1.75;color:var(--muted)}
+.sec-stats{display:flex;flex-direction:column;gap:34px}
+.sec-stat{border-left:1px solid rgba(52,211,153,0.25);padding-left:24px}
+.sec-stat-num{font-family:"Syne",sans-serif;font-size:clamp(26px,3.2vw,42px);font-weight:800;color:var(--green);line-height:1}
+.sec-stat-lbl{font-size:11px;letter-spacing:.12em;color:var(--muted);margin-top:6px;text-transform:uppercase}
+
+/* ─── §6 MARQUEE + PROCESS ──────────────────── */
+.mq{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0;overflow:hidden;white-space:nowrap}
+.mq-t{display:inline-flex;gap:44px;animation:mq 22s linear infinite}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mq-i{font-family:"Syne",sans-serif;font-size:18px;font-style:italic;color:var(--faint)}
+.mq-s{color:var(--green);opacity:.3}
+
+.process{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--line)}
+.ps{padding:64px 44px;border-right:1px solid var(--line)}
+.ps:last-child{border-right:none}
+.ps-n{font-family:"Syne",sans-serif;font-size:11px;letter-spacing:.2em;color:var(--green);margin-bottom:18px}
+.ps-t{font-family:"Syne",sans-serif;font-weight:400;font-size:25px;letter-spacing:-.01em;margin-bottom:14px}
+.ps-b{font-size:13px;line-height:1.75;color:var(--muted)}
+
+/* ─── §7 CONTACT (BIM output) ───────────────── */
+.contact{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line)}
+.ct-visual{
+  overflow:hidden;min-height:460px;
+  background:
+    radial-gradient(ellipse at 40% 50%,rgba(52,211,153,0.14) 0%,transparent 55%),
+    radial-gradient(ellipse at 80% 30%,rgba(16,185,129,0.18) 0%,transparent 50%),
+    #05090F;
+  position:relative;
+}
+#contact-canvas{width:100%!important;height:100%!important;display:block}
+.ct-cap{position:absolute;left:24px;bottom:22px;z-index:2;font-family:"DM Mono",monospace;font-size:11px;letter-spacing:.1em;color:var(--muted)}
+.ct-cap b{color:var(--green);font-weight:500}
+.ct-txt{padding:80px 60px;display:flex;flex-direction:column;justify-content:center;gap:22px}
+.ct-label{font-size:9px;letter-spacing:.26em;text-transform:uppercase;color:var(--green)}
+.ct-h{font-family:"Syne",sans-serif;font-weight:300;font-size:clamp(26px,3.8vw,52px);line-height:1.08;letter-spacing:-.02em}
+.ct-body{font-size:13px;line-height:1.75;color:var(--muted);max-width:340px}
+.ct-cta{font-family:"DM Mono",monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:var(--green);border:1px solid rgba(52,211,153,0.4);border-radius:999px;padding:0.85rem 1.9rem;width:max-content;transition:background .2s,transform .15s}
+.ct-cta:hover{background:rgba(52,211,153,0.1);transform:translateY(-1px)}
+
+/* ─── BRANDED FOOTER ────────────────────────── */
+.brand-footer{
+  border-top:1px solid var(--line);
+  background:linear-gradient(180deg,#0a0f0c 0%,#070a08 100%);
+  padding:96px 6vw 56px;
+}
+.bf-inner{width:min(1080px,100%);margin:0 auto;text-align:center}
+.bf-wordmark{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(2.2rem,5vw,4rem);letter-spacing:0.06em;color:var(--cream);text-transform:uppercase}
+.bf-tag{font-family:"DM Mono",monospace;font-size:0.8rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-top:0.9rem}
+.bf-cols{margin-top:3rem;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;text-align:left}
+.bf-cols h3{font-family:"DM Mono",monospace;font-size:0.8rem;letter-spacing:0.1em;color:rgba(238,242,238,0.74)}
+.bf-cols p{margin-top:0.7rem;font-family:"DM Mono",monospace;font-size:0.8rem;line-height:1.9;color:rgba(238,242,238,0.6)}
+.bf-cols a{color:inherit;text-decoration:none;transition:color .2s}
+.bf-cols a:hover{color:var(--green)}
+.bf-strip{
+  margin-top:3rem;padding-top:1.1rem;border-top:1px solid rgba(52,211,153,0.2);
+  font-family:"DM Mono",monospace;font-size:0.76rem;letter-spacing:0.08em;color:rgba(238,242,238,0.56)
+}
+
+/* ─── REVEAL (CSS transition, class-toggled) ─── */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
+.rv-r{opacity:0;transform:translateX(16px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
+.rv.in,.rv-r.in{opacity:1;transform:none}
+
+/* ─── DONATE MODAL ──────────────────────────── */
+.modal-overlay{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(4,7,5,0.82);backdrop-filter:blur(6px)}
+.modal-overlay.open{display:flex}
+.modal{width:min(560px,100%);max-height:90vh;overflow-y:auto;background:#0b110d;border:1px solid rgba(52,211,153,0.25);border-radius:18px;padding:36px 36px 32px;position:relative;box-shadow:0 30px 80px rgba(0,0,0,0.6)}
+.modal-close{position:absolute;top:14px;right:18px;background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;transition:color .2s}
+.modal-close:hover{color:var(--white)}
+.modal h2{font-family:"Syne",sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:-.01em;color:var(--cream)}
+.modal-sub{font-size:13px;line-height:1.6;color:var(--muted);margin-top:9px;max-width:450px}
+.form-grid{display:flex;flex-direction:column;gap:16px;margin-top:24px}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font-family:"DM Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.field input,.field textarea{font-family:"Inter",sans-serif;font-size:14px;color:var(--white);background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-radius:9px;padding:11px 13px;transition:border-color .2s}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--green)}
+.field textarea{resize:vertical;min-height:70px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.dropzone{border:1.5px dashed rgba(52,211,153,0.4);border-radius:11px;padding:22px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s}
+.dropzone:hover,.dropzone.drag{border-color:var(--green);background:rgba(52,211,153,0.05)}
+.dropzone p{font-size:13px;color:var(--muted)}
+.dropzone b{color:var(--green)}
+.file-list{display:flex;flex-direction:column;gap:6px}
+.file-item{display:flex;justify-content:space-between;align-items:center;font-family:"DM Mono",monospace;font-size:11px;color:var(--white);background:rgba(255,255,255,0.04);border-radius:7px;padding:7px 10px}
+.file-item .rm{cursor:pointer;color:var(--muted);transition:color .2s}
+.file-item .rm:hover{color:#ff6b6b}
+.consent{display:flex;align-items:flex-start;gap:9px;font-size:12px;color:var(--muted);line-height:1.5}
+.consent input{margin-top:2px;accent-color:var(--green)}
+.modal-submit{font-family:"DM Mono",monospace;font-size:0.8rem;letter-spacing:.12em;text-transform:uppercase;font-weight:500;padding:0.95rem 1.6rem;border-radius:999px;border:1px solid var(--green);background:var(--green);color:#052013;cursor:pointer;transition:background .2s,opacity .2s;width:100%;margin-top:4px}
+.modal-submit:hover{background:#2bbe87}
+.modal-submit:disabled{opacity:.5;cursor:not-allowed}
+.progress-wrap{margin-top:12px;display:none}
+.progress-wrap.show{display:block}
+.progress-bar{height:6px;border-radius:99px;background:rgba(255,255,255,0.08);overflow:hidden}
+.progress-fill{height:100%;width:0;background:var(--green);transition:width .2s}
+.form-status{font-family:"DM Mono",monospace;font-size:12px;margin-top:11px;line-height:1.5;min-height:1px}
+.form-status.err{color:#ff6b6b}
+.form-status.ok{color:var(--green)}
+
+@media(max-width:820px){
+  .site-nav{padding:1rem 1.25rem}
+  .nav-links{gap:0.7rem}
+  .hero{height:auto;min-height:100vh;padding:96px 0 48px}
+  .hero-inner{position:relative;inset:auto}
+  .hero-text{width:100%;padding:0 1.5rem}
+  .hero-cta-block{gap:22px}
+  .hero-legend{display:none}
+  .partners{padding:28px 24px}
+  .product{padding:56px 28px}
+  .airgap-over{padding:0 28px 56px}
+  .rag-cols,.contact{grid-template-columns:1fr}
+  .rag-text,.ct-txt{padding:56px 28px}
+  .sec-strip{grid-template-columns:1fr;padding:64px 28px;gap:40px}
+  .process{grid-template-columns:1fr}
+  .ps{border-right:none;border-bottom:1px solid var(--line);padding:48px 28px}
+  .bf-cols{grid-template-columns:1fr;gap:2rem;text-align:center}
+}
+</style>
+<link rel="stylesheet" href="/css/header.css">
+</head>
+<body>
+
+<!-- ===== SHARED SITE HEADER · keep identical on every page (styled by /css/header.css) ===== -->
+<nav class="site-nav" id="nav" aria-label="Main navigation">
+  <a class="brand" href="/index.html">AFFINITY</a>
+  <div class="nav-links">
+    <a href="/pages/ai.html">AI</a>
+    <span aria-hidden="true">·</span>
+    <a href="/pages/gaia.html">GAIA</a>
+    <span aria-hidden="true">·</span>
+    <a href="/pages/3dc.html">3DC</a>
+  </div>
+</nav>
+
+<!-- §1 HERO -->
+<section class="hero">
+  <div class="hero-inner">
+  <canvas id="hero-canvas"></canvas>
+  <div class="hero-vignette"></div>
+  <div class="hero-text">
+    <div class="h-eye" id="gLab">Affinity 3Deconstructor</div>
+    <h1 class="h-h1" id="gH">3Deconstructor</h1>
+    <p class="h-blurb" id="gBlurb">We're building a privately owned 3D point-cloud collection — so the community can own its own AI infrastructure instead of renting intelligence from a handful of corporations. Right now, we're gathering as many scans as we can.</p>
+    <div class="h-early" id="gEarly"><span class="dot"></span>Every firm that donates scans gets early access to 3Deconstructor when it releases.</div>
+    <div class="hero-cta-block" id="gCta">
+      <div class="hero-counter">
+        <div class="counter-num"><span id="scanCount">50</span></div>
+        <div class="counter-label">Scans Donated</div>
+      </div>
+      <button class="donate-big" type="button" title="Scan donation portal — coming soon">Donate Scans →</button>
+    </div>
+  </div>
+  <div class="hero-legend" id="heroLegend">
+    <div class="lg-title">Classified Surfaces</div>
+    <div class="seg-item"><span class="seg-dot" style="color:#34D399;background:#34D399"></span>Floor</div>
+    <div class="seg-item"><span class="seg-dot" style="color:#60A5FA;background:#60A5FA"></span>Walls</div>
+    <div class="seg-item"><span class="seg-dot" style="color:#FBBF24;background:#FBBF24"></span>Ceiling</div>
+    <div class="seg-item"><span class="seg-dot" style="color:#F472B6;background:#F472B6"></span>Furniture</div>
+  </div>
+  </div>
+</section>
+
+<!-- PARTNERS -->
+<section class="partners">
+  <div class="partners-inner">
+    <span class="partners-label">Building the collection with</span>
+    <div class="partners-row">
+      <span class="partner">Immersive 360</span>
+      <span class="partner">John J. Bailey Architect LLC</span>
+      <span class="partner">Eureka Building Intelligence</span>
+    </div>
+  </div>
+</section>
+
+<!-- §2 PRODUCT PANEL -->
+<div class="product rv">
+  <div class="p-badge">AI Point Cloud Intelligence</div>
+  <div class="p-title">Affinity 3Deconstructor</div>
+  <div class="p-tag">An AI tool that takes 3D point cloud scans and automatically labels every point — turning a dumb cloud into a structured, intelligent model.</div>
+</div>
+
+<!-- §3 THE PROBLEM -->
+<section class="airgap" id="section-problem">
+  <canvas id="raw-canvas"></canvas>
+  <div class="airgap-grid"></div>
+  <div class="airgap-over">
+    <h2 class="airgap-h rv">A raw scan is dumb.<br><em>3DC makes it think.</em></h2>
+    <p class="airgap-sub rv">A 3D scan is just millions of points in space — a colourless, structureless cloud. You can look at it, but nothing in the scan knows what it's looking at: a wall, a desk, the floor. 3DC adds that missing intelligence, labelling every point so the geometry finally means something.</p>
+  </div>
+</section>
+
+<!-- §4 INSTANCE SEGMENTATION -->
+<section class="rag" id="section-seg">
+  <div class="rag-cols">
+    <div class="rag-text rv">
+      <div class="rag-label">Instance Segmentation</div>
+      <h2 class="rag-h">Every object,<br>its own identity.</h2>
+      <p class="rag-body">3DC's core capability is instance segmentation — separating individual objects rather than just classifying surface types. It doesn't only see "furniture"; it sees this chair, that table, and the cabinet beside them as distinct, addressable things. Each object gets its own colour, its own boundary, its own identity — and that distinction is what makes a scan usable.</p>
+    </div>
+    <div class="rag-visual">
+      <canvas id="seg-canvas"></canvas>
+      <div class="seg-cap"><b>6</b> distinct object instances</div>
+    </div>
+  </div>
+</section>
+
+<!-- §5 CAPABILITY STRIP -->
+<section class="sec-strip" id="section-capability">
+  <div class="rv">
+    <div class="sec-label">Inputs &amp; Outputs</div>
+    <h2 class="sec-h">From Matterport<br>to meaning.</h2>
+    <p class="sec-body" style="margin-top:1.3rem">3DC ingests point clouds straight from Matterport scanners in E57 and PLY format. What comes back is the same geometry, now fully labelled — every point assigned to a surface type and an individual object instance, ready for whatever comes next.</p>
+  </div>
+  <div class="sec-stats rv">
+    <div class="sec-stat">
+      <div class="sec-stat-num">E57 · PLY</div>
+      <div class="sec-stat-lbl">Native Scan Formats</div>
+    </div>
+    <div class="sec-stat">
+      <div class="sec-stat-num">100%</div>
+      <div class="sec-stat-lbl">Points Labelled</div>
+    </div>
+    <div class="sec-stat">
+      <div class="sec-stat-num">Per-Object</div>
+      <div class="sec-stat-lbl">Instance Resolution</div>
+    </div>
+  </div>
+</section>
+
+<!-- §6 MARQUEE + PROCESS -->
+<div class="mq">
+  <div class="mq-t">
+    <span class="mq-i">BIM model generation</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Spatial AI</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Facility management</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Automated measurements</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">BIM model generation</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Spatial AI</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Facility management</span><span class="mq-s"> ◈ </span>
+    <span class="mq-i">Automated measurements</span><span class="mq-s"> ◈ </span>
+  </div>
+</div>
+<div class="process">
+  <div class="ps rv">
+    <div class="ps-n">01</div>
+    <div class="ps-t">Scan.</div>
+    <div class="ps-b">Capture the space with a Matterport scanner and export the raw point cloud as E57 or PLY — millions of unlabelled points.</div>
+  </div>
+  <div class="ps rv">
+    <div class="ps-n">02</div>
+    <div class="ps-t">Deconstruct.</div>
+    <div class="ps-b">3DC runs instance segmentation across the cloud, assigning every point to a surface type and an individual object.</div>
+  </div>
+  <div class="ps rv">
+    <div class="ps-n">03</div>
+    <div class="ps-t">Build.</div>
+    <div class="ps-b">Feed the structured output into BIM generation, spatial AI, facility management, or automated measurement — tasks a dumb cloud could never serve.</div>
+  </div>
+</div>
+
+<!-- §7 CONTACT -->
+<section class="contact" id="contact">
+  <div class="ct-visual">
+    <canvas id="contact-canvas"></canvas>
+    <div class="ct-cap">Output → <b>BIM-ready model</b></div>
+  </div>
+  <div class="ct-txt rv-r">
+    <div class="ct-label">Put 3DC to work</div>
+    <h2 class="ct-h">Make your<br>scans count.</h2>
+    <p class="ct-body">Sitting on point clouds that no system can read? Affinity turns them into labelled, object-aware models ready for your pipeline.</p>
+    <a class="ct-cta" href="mailto:hello@affinityai.co">Start the Conversation →</a>
+  </div>
+</section>
+
+<!-- BRANDED FOOTER -->
+<footer class="brand-footer rv">
+  <div class="bf-inner">
+    <div class="bf-wordmark">AFFINITY</div>
+    <div class="bf-tag">A new standard for AI.</div>
+    <div class="bf-cols">
+      <div>
+        <h3>AFFINITY 3DC</h3>
+        <p>AI Point Cloud Segmentation<br>Instance-Level Labelling<br>E57 · PLY Ingestion<br>BIM-Ready Output</p>
+      </div>
+      <div>
+        <h3>EXPLORE</h3>
+        <p><a href="../index.html">Home</a><br><a href="ai.html">Affinity AI</a><br><a href="gaia.html">Affinity Gaia</a><br><a href="3dc.html">Affinity 3DC</a></p>
+      </div>
+    </div>
+    <div class="bf-strip">© 2025 AFFINITY · ALL RIGHTS RESERVED</div>
+  </div>
+</footer>
+
+<!-- DONATE SCANS MODAL -->
+<div class="modal-overlay" id="donateModal" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="donateTitle">
+    <button class="modal-close" type="button" id="donateClose" aria-label="Close">&times;</button>
+    <h2 id="donateTitle">Donate Scans</h2>
+    <p class="modal-sub">Contribute your Matterport E57 point-cloud scans to the community collection. Donors get early access to 3Deconstructor at release.</p>
+    <form class="form-grid" id="donateForm" novalidate>
+      <div class="field-row">
+        <div class="field"><label>Firm / Company *</label><input name="firm" autocomplete="organization" required></div>
+        <div class="field"><label>Contact Name *</label><input name="name" autocomplete="name" required></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Email *</label><input name="email" type="email" autocomplete="email" required></div>
+        <div class="field"><label>Phone</label><input name="phone" autocomplete="tel"></div>
+      </div>
+      <div class="field"><label>Notes</label><textarea name="notes" placeholder="Anything we should know about these scans?"></textarea></div>
+      <div class="field">
+        <label>E57 Scan Files *</label>
+        <div class="dropzone" id="dropzone"><p>Drop <b>.e57</b> files here or <b>browse</b></p></div>
+        <input type="file" id="fileInput" accept=".e57" multiple hidden>
+        <div class="file-list" id="fileList"></div>
+      </div>
+      <label class="consent"><input type="checkbox" id="consent" required><span>I confirm I have the right to donate these scans and agree they may be used to train and improve Affinity 3Deconstructor.</span></label>
+      <button class="modal-submit" type="submit" id="donateSubmit">Submit Donation</button>
+      <div class="progress-wrap" id="progressWrap"><div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div></div>
+      <div class="form-status" id="formStatus" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+
+<script>
+/* ══ COLOURS ═══════════════════════════════════════════════════ */
+const C = {
+  floor:    new THREE.Color(0x34D399),
+  wall:     new THREE.Color(0x60A5FA),
+  ceiling:  new THREE.Color(0xFBBF24),
+  furniture:new THREE.Color(0xF472B6),
+};
+
+/* ══ GEOMETRY BUILDERS ═════════════════════════════════════════
+   Each section gets its OWN distinct point-cloud subject.
+─────────────────────────────────────────────────────────────── */
+
+// §1 — a fully classified ROOM (floor/walls/ceiling + furniture)
+function buildRoom(){
+  const a={pts:[],cols:[]};
+  const W=4,D=3,H=2.2,d=0.10;
+  const push=(x,y,z,c)=>{a.pts.push(x,y,z);a.cols.push(c.r,c.g,c.b);};
+  for(let x=-W/2;x<=W/2;x+=d)for(let z=-D/2;z<=D/2;z+=d){push(x,-H/2,z,C.floor);push(x,H/2,z,C.ceiling);}
+  for(let x=-W/2;x<=W/2;x+=d)for(let y=-H/2;y<=H/2;y+=d){push(x,y,-D/2,C.wall);push(x,y,D/2,C.wall);}
+  for(let z=-D/2;z<=D/2;z+=d)for(let y=-H/2;y<=H/2;y+=d){push(-W/2,y,z,C.wall);push(W/2,y,z,C.wall);}
+  const boxShell=(cx,cz,w,dd,h)=>{
+    for(let x=-w/2;x<=w/2;x+=d*0.9)for(let z=-dd/2;z<=dd/2;z+=d*0.9)for(let y=0;y<=h;y+=d*0.9){
+      const shell=Math.abs(x)>w/2-d||Math.abs(z)>dd/2-d||y>h-d||y<d;
+      if(shell)push(cx+x,-H/2+y,cz+z,C.furniture);
+    }
+  };
+  boxShell(-1.0,-0.4,1.0,0.9,0.9);
+  boxShell(1.2,0.6,0.7,0.7,1.1);
+  return a;
+}
+
+// §3 — a RAW, unlabelled, monochrome cloud (the "dumb" scan)
+function buildRaw(){
+  const a={pts:[],cols:[]},n=5200;
+  for(let i=0;i<n;i++){
+    const x=(Math.random()-0.5)*7, y=(Math.random()-0.5)*4, z=(Math.random()-0.5)*5;
+    a.pts.push(x,y,z);
+    const g=0.34+Math.random()*0.22;          // dull grey, slight noise
+    a.cols.push(g,g+0.02,g);
+  }
+  return a;
+}
+
+// §4 — distinct OBJECT INSTANCES, each its own colour
+function buildInstances(){
+  const a={pts:[],cols:[]};
+  const push=(x,y,z,c)=>{a.pts.push(x,y,z);a.cols.push(c.r,c.g,c.b);};
+  const boxShell=(cx,cy,cz,w,h,dd,hex)=>{
+    const c=new THREE.Color(hex),d=0.075;
+    for(let x=-w/2;x<=w/2;x+=d)for(let y=-h/2;y<=h/2;y+=d)for(let z=-dd/2;z<=dd/2;z+=d){
+      const shell=Math.abs(x)>w/2-d||Math.abs(y)>h/2-d||Math.abs(z)>dd/2-d;
+      if(shell)push(cx+x,cy+y,cz+z,c);
+    }
+  };
+  const sphereShell=(cx,cy,cz,r,hex,count)=>{
+    const c=new THREE.Color(hex);
+    for(let i=0;i<count;i++){
+      const th=Math.random()*Math.PI*2, ph=Math.acos(2*Math.random()-1);
+      push(cx+r*Math.sin(ph)*Math.cos(th),cy+r*Math.cos(ph),cz+r*Math.sin(ph)*Math.sin(th),c);
+    }
+  };
+  boxShell(-2.0,-0.3, 0.0, 1.1,1.0,1.1, 0x34D399);
+  boxShell( 0.1, 0.3,-1.0, 0.9,1.5,0.9, 0x60A5FA);
+  boxShell( 2.1,-0.2, 0.6, 1.2,0.8,1.2, 0xF472B6);
+  boxShell(-0.9, 1.0, 1.4, 0.8,0.8,0.8, 0xFBBF24);
+  sphereShell( 1.5, 1.0, 1.3, 0.65, 0xA78BFA, 700);
+  sphereShell(-2.2, 1.2,-1.3, 0.55, 0x2DD4BF, 600);
+  return a;
+}
+
+// §7 — an ordered BIM wireframe model (points along cube edges)
+function buildBIM(){
+  const a={pts:[],cols:[]};
+  const greens=[0x34D399,0x2DD4BF,0x10B981];
+  const corners=[[-1,-1,-1],[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,1],[1,-1,1],[1,1,1],[-1,1,1]];
+  const edges=[[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+  const cube=(cx,cy,cz,s,hex)=>{
+    const c=new THREE.Color(hex),h=s/2,steps=14;
+    edges.forEach(([i,j])=>{
+      const A=corners[i],B=corners[j];
+      for(let t=0;t<=steps;t++){
+        const k=t/steps;
+        a.pts.push(cx+(A[0]+(B[0]-A[0])*k)*h, cy+(A[1]+(B[1]-A[1])*k)*h, cz+(A[2]+(B[2]-A[2])*k)*h);
+        a.cols.push(c.r,c.g,c.b);
+      }
+    });
+  };
+  let n=0;
+  for(let gx=-1;gx<=1;gx++)for(let gz=-1;gz<=1;gz++){
+    const tall = (gx+gz)%2===0;
+    cube(gx*1.7, tall?0.2:-0.2, gz*1.7, tall?1.5:1.0, greens[n++%greens.length]);
+  }
+  return a;
+}
+
+/* ══ RENDERER ══════════════════════════════════════════════════ */
+function spinCloud(canvasEl, data, opts){
+  opts=opts||{};
+  const container=canvasEl.parentElement;
+  let W=container.offsetWidth||innerWidth, H=container.offsetHeight||innerHeight;
+  const rdr=new THREE.WebGLRenderer({canvas:canvasEl,antialias:true,alpha:true});
+  rdr.setSize(W,H);rdr.setPixelRatio(Math.min(devicePixelRatio,2));
+  const sc=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(45,W/H,.1,200);
+  cam.position.set(opts.cx||6,opts.cy||1.6,opts.cz||7);
+  cam.lookAt(0,opts.ly||0,0);
+  const geo=new THREE.BufferGeometry();
+  geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(data.pts),3));
+  geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(data.cols),3));
+  const mat=new THREE.PointsMaterial({size:opts.size||0.05,vertexColors:true,transparent:true,opacity:0,sizeAttenuation:true});
+  const cloud=new THREE.Points(geo,mat);sc.add(cloud);
+  let mx=0,my=0;
+  document.addEventListener('mousemove',e=>{mx=(e.clientX/innerWidth-.5)*2;my=(e.clientY/innerHeight-.5)*2;});
+  const clk=new THREE.Clock();let ry=opts.ry0||0,px=0,py=0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    const dt=clk.getDelta();
+    ry+=dt*(opts.spin||0.16);
+    px+=(-my*.08-px)*.02;py+=(mx*.08-py)*.02;
+    cloud.rotation.y=ry+py*.3;
+    cloud.rotation.x=(opts.tilt!==undefined?opts.tilt:0.12)+px*.12;
+    rdr.render(sc,cam);
+  })();
+  window.addEventListener('resize',()=>{W=container.offsetWidth||innerWidth;H=container.offsetHeight||innerHeight;cam.aspect=W/H;cam.updateProjectionMatrix();rdr.setSize(W,H);});
+  return mat;
+}
+function fadeIn(mat,to){mat.opacity=to;}  // cloud shows at full opacity as soon as it renders
+function onView(el,cb){let done=false;const io=new IntersectionObserver(es=>{if(es[0].isIntersecting&&!done){done=true;cb();}},{threshold:.12});io.observe(el);}
+
+/* ══ MOUNT EACH SECTION ════════════════════════════════════════ */
+if(typeof THREE!=='undefined'){
+  // §1 HERO — room
+  (function(){
+    const mat=spinCloud(document.getElementById('hero-canvas'),buildRoom(),{cx:6.2,cy:1.8,cz:6.2,size:0.05,spin:0.16});
+    mat.opacity=0.92;  // entrance handled by CSS; cloud shows as soon as it renders
+    // count up the Scans Donated figure (placeholder target: 50; HTML default keeps 50 if anime can't run)
+    const cs={v:0},out=document.getElementById('scanCount');
+    if(out)anime({targets:cs,v:50,duration:1900,delay:700,easing:'easeOutExpo',round:1,update:()=>{out.textContent=cs.v;}});
+  })();
+
+  // §3 PROBLEM — raw grey cloud
+  onView(document.getElementById('section-problem'),function(){
+    const mat=spinCloud(document.getElementById('raw-canvas'),buildRaw(),{cx:5,cy:0.5,cz:6,size:0.028,spin:0.05,tilt:0.05});
+    fadeIn(mat,0.55,1600);
+  });
+
+  // §4 INSTANCE SEGMENTATION — distinct objects
+  onView(document.getElementById('seg-canvas'),function(){
+    const mat=spinCloud(document.getElementById('seg-canvas'),buildInstances(),{cx:0,cy:1.2,cz:7.5,ly:0.2,size:0.05,spin:0.26});
+    fadeIn(mat,0.95,1400);
+  });
+
+  // §7 CONTACT — BIM wireframe model
+  onView(document.getElementById('contact-canvas'),function(){
+    const mat=spinCloud(document.getElementById('contact-canvas'),buildBIM(),{cx:5.5,cy:2.4,cz:5.5,size:0.04,spin:0.2,tilt:0.18});
+    fadeIn(mat,0.9,1400);
+  });
+}
+
+/* ══ SCROLL REVEALS ════════════════════════════════════════════ */
+const ro=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add('in');
+    ro.unobserve(e.target);
+  });
+},{threshold:.06,rootMargin:'0px 0px -32px 0px'});
+document.querySelectorAll('.rv,.rv-r').forEach(el=>ro.observe(el));
+
+/* ══ DONATE SCANS — form + direct-to-R2 upload ════════════════
+   Set DONATE_API to your deployed Cloudflare Worker URL.
+   The Worker stores contact info (D1) and returns presigned R2
+   PUT URLs; large .e57 files upload straight from the browser to
+   R2, bypassing the Worker's request-size limit.
+─────────────────────────────────────────────────────────────── */
+(function(){
+  const DONATE_API = 'https://YOUR-WORKER.workers.dev';   // ← replace with your Worker URL
+
+  const modal=document.getElementById('donateModal');
+  const openBtn=document.querySelector('.donate-big');
+  const closeBtn=document.getElementById('donateClose');
+  const form=document.getElementById('donateForm');
+  const dz=document.getElementById('dropzone');
+  const fileInput=document.getElementById('fileInput');
+  const fileList=document.getElementById('fileList');
+  const statusEl=document.getElementById('formStatus');
+  const submitBtn=document.getElementById('donateSubmit');
+  const progWrap=document.getElementById('progressWrap');
+  const progFill=document.getElementById('progressFill');
+  if(!modal||!openBtn)return;
+  let files=[];
+
+  const openModal =()=>{modal.classList.add('open');modal.setAttribute('aria-hidden','false');};
+  const closeModal=()=>{modal.classList.remove('open');modal.setAttribute('aria-hidden','true');};
+  openBtn.addEventListener('click',openModal);
+  closeBtn.addEventListener('click',closeModal);
+  modal.addEventListener('click',e=>{if(e.target===modal)closeModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&modal.classList.contains('open'))closeModal();});
+
+  const setStatus=(msg,kind)=>{statusEl.textContent=msg||'';statusEl.className='form-status'+(kind?' '+kind:'');};
+  function renderFiles(){
+    fileList.innerHTML='';
+    files.forEach((f,i)=>{
+      const row=document.createElement('div');row.className='file-item';
+      row.innerHTML='<span>'+f.name+' · '+(f.size/1048576).toFixed(1)+' MB</span><span class="rm" data-i="'+i+'">remove</span>';
+      fileList.appendChild(row);
+    });
+  }
+  function addFiles(list){for(const f of list){if(/\.e57$/i.test(f.name)&&!files.some(x=>x.name===f.name&&x.size===f.size))files.push(f);}renderFiles();}
+  dz.addEventListener('click',()=>fileInput.click());
+  fileInput.addEventListener('change',e=>{addFiles(e.target.files);fileInput.value='';});
+  fileList.addEventListener('click',e=>{const i=e.target.getAttribute('data-i');if(i!==null){files.splice(+i,1);renderFiles();}});
+  ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag');}));
+  dz.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
+
+  function putWithProgress(url,file,onProg){
+    return new Promise((res,rej)=>{
+      const xhr=new XMLHttpRequest();
+      xhr.open('PUT',url);
+      xhr.upload.onprogress=e=>{if(e.lengthComputable)onProg(e.loaded/e.total);};
+      xhr.onload=()=>{(xhr.status>=200&&xhr.status<300)?res():rej(new Error('Upload failed ('+xhr.status+')'));};
+      xhr.onerror=()=>rej(new Error('Network error during upload'));
+      xhr.send(file);
+    });
+  }
+
+  form.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!form.firm.value.trim()||!form.name.value.trim()||!form.email.value.trim()){setStatus('Please fill in firm, name, and email.','err');return;}
+    if(!document.getElementById('consent').checked){setStatus('Please confirm you have the right to donate these scans.','err');return;}
+    if(!files.length){setStatus('Please add at least one .e57 file.','err');return;}
+    if(DONATE_API.includes('YOUR-WORKER')){setStatus('Backend not configured yet — set DONATE_API to your Worker URL.','err');return;}
+
+    const meta={firm:form.firm.value.trim(),name:form.name.value.trim(),email:form.email.value.trim(),phone:form.phone.value.trim(),notes:form.notes.value.trim(),
+      files:files.map(f=>({name:f.name,size:f.size}))};
+    submitBtn.disabled=true;progWrap.classList.add('show');progFill.style.width='0%';setStatus('Preparing upload…');
+    try{
+      const r=await fetch(DONATE_API+'/api/donate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(meta)});
+      if(!r.ok)throw new Error('Server rejected submission ('+r.status+')');
+      const {submissionId,uploads}=await r.json();
+      for(let i=0;i<files.length;i++){
+        setStatus('Uploading '+files[i].name+' ('+(i+1)+'/'+files.length+')…');
+        await putWithProgress(uploads[i].uploadUrl,files[i],p=>{progFill.style.width=Math.round(((i+p)/files.length)*100)+'%';});
+        progFill.style.width=Math.round(((i+1)/files.length)*100)+'%';
+      }
+      await fetch(DONATE_API+'/api/donate/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId})});
+      setStatus('Thank you! Your scans were received — we\'ll be in touch about early access.','ok');
+      form.reset();files=[];renderFiles();
+    }catch(err){setStatus(err.message||'Something went wrong. Please try again.','err');}
+    finally{submitBtn.disabled=false;}
+  });
+})();
+</script>
+</body>
+</html>

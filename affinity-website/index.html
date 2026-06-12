@@ -45,6 +45,8 @@
         .nav-links a:hover { color: var(--cream); }
         .nav-links a[href*="ai"]:hover { color: #8b0000; }
         .nav-links a[href*="photos"]:hover { color: #1055cc; }
+        .nav-links a[href*="gaia"]:hover { color: #19D8FF; }
+        .nav-links a[href*="3dc"]:hover { color: #34D399; }
         .nav-links span { color: rgba(255,255,255,0.25); font-size: 0.7rem; }
 
         /*
@@ -83,6 +85,12 @@
         .hero-wordmark.hidden { opacity: 0; transform: scale(0.93) translateY(-14px); pointer-events: none; }
         .hero-wordmark-text { font-family: "Syne", sans-serif; font-weight: 800; font-size: clamp(2.8rem, 8vw, 6.5rem); letter-spacing: 0.2em; color: var(--cream); text-transform: uppercase; text-shadow: 0 0 80px rgba(253,241,224,0.15); animation: wordmarkIn 1s cubic-bezier(0.4,0,0.2,1) both; }
         .hero-wordmark-sub { font-family: "DM Mono", monospace; font-size: clamp(0.7rem, 1.4vw, 1rem); letter-spacing: 0.22em; color: rgba(253,241,224,0.5); text-transform: uppercase; animation: wordmarkIn 1s 0.25s cubic-bezier(0.4,0,0.2,1) both; }
+        .hero-cta-row { display: flex; gap: 0.9rem; margin-top: 1.4rem; pointer-events: auto; animation: wordmarkIn 1s 0.5s cubic-bezier(0.4,0,0.2,1) both; }
+        .hero-btn { font-family: "DM Mono", monospace; font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; text-decoration: none; padding: 0.7rem 1.7rem; border-radius: 999px; border: 1px solid rgba(253,241,224,0.25); color: rgba(253,241,224,0.85); background: rgba(253,241,224,0.04); transition: color 0.2s, border-color 0.2s, background 0.2s, transform 0.15s; }
+        .hero-btn:hover { transform: translateY(-1px); }
+        .hero-btn.ai:hover { color: #ff5c5c; border-color: #ff5c5c; background: rgba(255,92,92,0.08); }
+        .hero-btn.gaia:hover { color: #19D8FF; border-color: #19D8FF; background: rgba(25,216,255,0.08); }
+        .hero-btn.tdc:hover { color: #34D399; border-color: #34D399; background: rgba(52,211,153,0.08); }
         @keyframes wordmarkIn {
             from { opacity: 0; transform: scale(0.94) translateY(16px); letter-spacing: 0.35em; }
             to   { opacity: 1; transform: scale(1) translateY(0); letter-spacing: 0.2em; }
@@ -247,19 +255,23 @@
             .team-grid { grid-template-columns: 1fr 1fr; }
         }
     </style>
+    <link rel="stylesheet" href="/css/header.css">
 </head>
 <body>
     <div class="progress-track" aria-hidden="true">
         <span id="scroll-progress"></span>
     </div>
 
-    <nav class="site-nav" aria-label="Main navigation">
-        <a class="brand" href="index.html">AFFINITY</a>
-        <div class="nav-links">
-            <a href="pages/ai.html">AI</a>
-            <span aria-hidden="true">·</span>
-            <a href="pages/gaia.html">GAIA</a>
-        </div>
+    <!-- ===== SHARED SITE HEADER · keep identical on every page (styled by /css/header.css) ===== -->
+    <nav class="site-nav" id="nav" aria-label="Main navigation">
+      <a class="brand" href="/index.html">AFFINITY</a>
+      <div class="nav-links">
+        <a href="/pages/ai.html">AI</a>
+        <span aria-hidden="true">·</span>
+        <a href="/pages/gaia.html">GAIA</a>
+        <span aria-hidden="true">·</span>
+        <a href="/pages/3dc.html">3DC</a>
+      </div>
     </nav>
 
     <main>
@@ -277,7 +289,12 @@
 
                 <div class="hero-wordmark" id="hero-wordmark" aria-hidden="true">
                     <span class="hero-wordmark-text">AFFINITY</span>
-                    <span class="hero-wordmark-sub">A new standard for AI security.</span>
+                    <span class="hero-wordmark-sub">A new standard for AI.</span>
+                    <div class="hero-cta-row">
+                        <a class="hero-btn ai" href="pages/ai.html">AI</a>
+                        <a class="hero-btn gaia" href="pages/gaia.html">Gaia</a>
+                        <a class="hero-btn tdc" href="pages/3dc.html">3DC</a>
+                    </div>
                 </div>
 
                 <div class="panel-layer" id="panel-layer">

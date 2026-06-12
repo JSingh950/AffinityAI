@@ -1,0 +1,23 @@
+# ── Secrets / credentials — never commit these ──
+.env
+.env.*
+!.env.example
+!.env.sample
+*.pem
+*.key
+*.pfx
+*.p12
+.dev.vars
+id_rsa
+id_ed25519
+*.keystore
+
+# ── Cloudflare / wrangler ──
+.wrangler/
+
+# ── Node ──
+node_modules/
+
+# ── OS junk ──
+.DS_Store
+**/.DS_Store
