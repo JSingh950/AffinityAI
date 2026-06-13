@@ -671,7 +671,7 @@ document.querySelectorAll('.rv,.rv-r').forEach(el=>ro.observe(el));
    R2, bypassing the Worker's request-size limit.
 ─────────────────────────────────────────────────────────────── */
 (function(){
-  const DONATE_API = 'https://YOUR-WORKER.workers.dev';   // ← replace with your Worker URL
+  const DONATE_API = 'https://affinity-donate.affinityai.workers.dev';
 
   const modal=document.getElementById('donateModal');
   const openBtn=document.querySelector('.donate-big');
@@ -711,14 +711,21 @@ document.querySelectorAll('.rv,.rv-r').forEach(el=>ro.observe(el));
   ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag');}));
   dz.addEventListener('drop',e=>addFiles(e.dataTransfer.files));
 
-  function putWithProgress(url,file,onProg){
+  // PUT one multipart part; resolves with its ETag, reports bytes uploaded so far.
+  function putPart(url,blob,onProg){
     return new Promise((res,rej)=>{
       const xhr=new XMLHttpRequest();
       xhr.open('PUT',url);
-      xhr.upload.onprogress=e=>{if(e.lengthComputable)onProg(e.loaded/e.total);};
-      xhr.onload=()=>{(xhr.status>=200&&xhr.status<300)?res():rej(new Error('Upload failed ('+xhr.status+')'));};
+      xhr.upload.onprogress=e=>{if(e.lengthComputable)onProg(e.loaded);};
+      xhr.onload=()=>{
+        if(xhr.status>=200&&xhr.status<300){
+          const etag=xhr.getResponseHeader('ETag');
+          if(etag)res(etag);
+          else rej(new Error('No ETag returned (check R2 CORS ExposeHeaders).'));
+        }else rej(new Error('Upload failed ('+xhr.status+')'));
+      };
       xhr.onerror=()=>rej(new Error('Network error during upload'));
-      xhr.send(file);
+      xhr.send(blob);
     });
   }
 
@@ -727,6 +734,9 @@ document.querySelectorAll('.rv,.rv-r').forEach(el=>ro.observe(el));
     if(!form.firm.value.trim()||!form.name.value.trim()||!form.email.value.trim()){setStatus('Please fill in firm, name, and email.','err');return;}
     if(!document.getElementById('consent').checked){setStatus('Please confirm you have the right to donate these scans.','err');return;}
     if(!files.length){setStatus('Please add at least one .e57 file.','err');return;}
+    const MAX_BYTES=50*1024*1024*1024;
+    const tooBig=files.find(f=>f.size>MAX_BYTES);
+    if(tooBig){setStatus(tooBig.name+' is over the 50 GB per-file limit.','err');return;}
     if(DONATE_API.includes('YOUR-WORKER')){setStatus('Backend not configured yet — set DONATE_API to your Worker URL.','err');return;}
 
     const meta={firm:form.firm.value.trim(),name:form.name.value.trim(),email:form.email.value.trim(),phone:form.phone.value.trim(),notes:form.notes.value.trim(),
@@ -736,10 +746,28 @@ document.querySelectorAll('.rv,.rv-r').forEach(el=>ro.observe(el));
       const r=await fetch(DONATE_API+'/api/donate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(meta)});
       if(!r.ok)throw new Error('Server rejected submission ('+r.status+')');
       const {submissionId,uploads}=await r.json();
+      const totalBytes=files.reduce((a,f)=>a+f.size,0)||1;
+      let doneBytes=0;
       for(let i=0;i<files.length;i++){
-        setStatus('Uploading '+files[i].name+' ('+(i+1)+'/'+files.length+')…');
-        await putWithProgress(uploads[i].uploadUrl,files[i],p=>{progFill.style.width=Math.round(((i+p)/files.length)*100)+'%';});
-        progFill.style.width=Math.round(((i+1)/files.length)*100)+'%';
+        const up=uploads[i];
+        const etags=[];
+        for(const part of up.parts){
+          const start=(part.partNumber-1)*up.partSize;
+          const end=Math.min(start+up.partSize,files[i].size);
+          const blob=files[i].slice(start,end);
+          setStatus('Uploading '+files[i].name+(up.parts.length>1?' — part '+part.partNumber+'/'+up.parts.length:'')+' ('+(i+1)+'/'+files.length+')…');
+          try{
+            const etag=await putPart(part.url,blob,loaded=>{progFill.style.width=Math.round(((doneBytes+loaded)/totalBytes)*100)+'%';});
+            etags.push({partNumber:part.partNumber,etag});
+            doneBytes+=(end-start);
+            progFill.style.width=Math.round((doneBytes/totalBytes)*100)+'%';
+          }catch(err){
+            fetch(DONATE_API+'/api/donate/abort-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:up.key,uploadId:up.uploadId})}).catch(()=>{});
+            throw err;
+          }
+        }
+        const cr=await fetch(DONATE_API+'/api/donate/complete-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId,key:up.key,uploadId:up.uploadId,parts:etags})});
+        if(!cr.ok)throw new Error('Failed to finalize '+files[i].name+' ('+cr.status+')');
       }
       await fetch(DONATE_API+'/api/donate/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId})});
       setStatus('Thank you! Your scans were received — we\'ll be in touch about early access.','ok');
