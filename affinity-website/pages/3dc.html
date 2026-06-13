@@ -317,7 +317,7 @@ body{background:var(--ink);color:var(--white);font-family:"Inter",sans-serif;fon
     <div class="h-early" id="gEarly"><span class="dot"></span>Every firm that donates scans gets early access to 3Deconstructor when it releases.</div>
     <div class="hero-cta-block" id="gCta">
       <div class="hero-counter">
-        <div class="counter-num"><span id="scanCount">50</span></div>
+        <div class="counter-num"><span id="scanCount">0</span></div>
         <div class="counter-label">Scans Donated</div>
       </div>
       <button class="donate-big" type="button" title="Scan donation portal — coming soon">Donate Scans →</button>
@@ -630,16 +630,16 @@ if(typeof THREE!=='undefined'){
   (function(){
     const mat=spinCloud(document.getElementById('hero-canvas'),buildRoom(),{cx:6.2,cy:1.8,cz:6.2,size:0.05,spin:0.16});
     mat.opacity=0.92;  // entrance handled by CSS; cloud shows as soon as it renders
-    // Scans Donated: hold at 50 until real donations exceed 50, then track the
-    // real total. Falls back to 50 if the count can't be fetched (URL matches
+    // Scans Donated: honest reflection of the real count of donated scans.
+    // Leaves the static 0 if the count can't be fetched (URL matches
     // DONATE_API in the donate-scans script below).
     const out=document.getElementById('scanCount');
     const countUp=t=>{const cs={v:0};anime({targets:cs,v:t,duration:1900,delay:700,easing:'easeOutExpo',round:1,update:()=>{out.textContent=cs.v;}});};
     if(out){
       fetch('https://affinity-donate.affinityai.workers.dev/api/donate/count')
         .then(r=>r.ok?r.json():null)
-        .then(d=>countUp(Math.max(50,(d&&typeof d.count==='number')?d.count:0)))
-        .catch(()=>countUp(50));
+        .then(d=>countUp((d&&typeof d.count==='number')?d.count:0))
+        .catch(()=>{});
     }
   })();
 
