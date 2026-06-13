@@ -1,0 +1,25 @@
+name = "affinity-donate"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# --- R2 bucket that stores the donated .e57 files ---
+[[r2_buckets]]
+binding = "SCANS"
+bucket_name = "affinity-scans"
+
+# --- D1 database that stores donor contact info / submission metadata ---
+[[d1_databases]]
+binding = "DB"
+database_name = "affinity-donations"
+database_id = "80b610f9-fa26-4e29-981b-02c236f1d71d"
+
+[vars]
+# Comma-separated allowlist of site origins permitted to call the API.
+ALLOWED_ORIGIN = "https://affinity-us.com,https://www.affinity-us.com"
+R2_BUCKET = "affinity-scans"
+R2_ACCOUNT_ID = "23cdeac61afd7576382effeb6626a8b2"
+
+# Secrets (do NOT put these here — set them with wrangler):
+#   wrangler secret put R2_ACCESS_KEY_ID
+#   wrangler secret put R2_SECRET_ACCESS_KEY
+# Create the key pair under: R2 → Manage R2 API Tokens → Create API Token (Object Read & Write)

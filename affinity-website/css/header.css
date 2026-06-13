@@ -1,0 +1,61 @@
+/* ============================================================
+   SHARED SITE HEADER — single source of truth for the nav.
+
+   Linked LAST in <head> on EVERY page so it overrides any
+   page-specific styles. Keep the <nav class="site-nav"> markup
+   identical on every page (see the template block in each HTML
+   file). Edit the header here and it changes everywhere.
+   ============================================================ */
+
+.site-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.15rem 2.5rem;
+  background: linear-gradient(180deg, rgba(5,5,7,0.85) 0%, transparent 100%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.site-nav .brand {
+  font-family: "Syne", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: #fdf1e0;
+  text-decoration: none;
+}
+
+.site-nav .nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.site-nav .nav-links a {
+  font-family: "DM Mono", monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+/* default hover + per-link primary colour (AI red · GAIA blue · 3DC green) */
+.site-nav .nav-links a:hover { color: #fdf1e0; }
+.site-nav .nav-links a[href*="ai"]:hover { color: #8b0000; }
+.site-nav .nav-links a[href*="gaia"]:hover { color: #19D8FF; }
+.site-nav .nav-links a[href*="3dc"]:hover { color: #34D399; }
+
+.site-nav .nav-links span {
+  color: rgba(255,255,255,0.25);
+  font-size: 0.7rem;
+}
+
+@media (max-width: 820px) {
+  .site-nav { padding: 1rem 1.25rem; }
+  .site-nav .nav-links { gap: 0.7rem; }
+}

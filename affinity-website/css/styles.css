@@ -113,6 +113,8 @@ body.page-exit {
 }
 .nav-links a[href*="ai"]:hover { color: #8b0000 !important; }
 .nav-links a[href*="photos"]:hover { color: #1055cc !important; }
+.nav-links a[href*="gaia"]:hover { color: #19D8FF !important; }
+.nav-links a[href*="3dc"]:hover { color: #34D399 !important; }
 
 .scroll-shell {
     height: 600vh;
