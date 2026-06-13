@@ -29,7 +29,7 @@ const MAX_FILE_BYTES = 50 * 1024 * 1024 * 1024; // 50 GB
 
 const cors = (origin) => ({
   'Access-Control-Allow-Origin': origin,
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
   'Vary': 'Origin',
 });
@@ -68,6 +68,16 @@ export default {
     const url = new URL(req.url);
     try {
       if (url.pathname === '/api/health') return json({ ok: true }, 200, origin);
+
+      // Public: number of scan files in completed ("uploaded") submissions.
+      if (url.pathname === '/api/donate/count' && req.method === 'GET') {
+        const row = await env.DB.prepare(
+          `SELECT COUNT(*) AS n FROM files f
+             JOIN submissions s ON f.submission_id = s.id
+            WHERE s.status = 'uploaded'`
+        ).first();
+        return json({ count: row?.n || 0 }, 200, origin);
+      }
 
       // 1) Submit contact info → store metadata, start a multipart upload per
       //    file, and return presigned PUT URLs for every part.

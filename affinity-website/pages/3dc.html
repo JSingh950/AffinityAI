@@ -630,9 +630,17 @@ if(typeof THREE!=='undefined'){
   (function(){
     const mat=spinCloud(document.getElementById('hero-canvas'),buildRoom(),{cx:6.2,cy:1.8,cz:6.2,size:0.05,spin:0.16});
     mat.opacity=0.92;  // entrance handled by CSS; cloud shows as soon as it renders
-    // count up the Scans Donated figure (placeholder target: 50; HTML default keeps 50 if anime can't run)
-    const cs={v:0},out=document.getElementById('scanCount');
-    if(out)anime({targets:cs,v:50,duration:1900,delay:700,easing:'easeOutExpo',round:1,update:()=>{out.textContent=cs.v;}});
+    // Scans Donated: hold at 50 until real donations exceed 50, then track the
+    // real total. Falls back to 50 if the count can't be fetched (URL matches
+    // DONATE_API in the donate-scans script below).
+    const out=document.getElementById('scanCount');
+    const countUp=t=>{const cs={v:0};anime({targets:cs,v:t,duration:1900,delay:700,easing:'easeOutExpo',round:1,update:()=>{out.textContent=cs.v;}});};
+    if(out){
+      fetch('https://affinity-donate.affinityai.workers.dev/api/donate/count')
+        .then(r=>r.ok?r.json():null)
+        .then(d=>countUp(Math.max(50,(d&&typeof d.count==='number')?d.count:0)))
+        .catch(()=>countUp(50));
+    }
   })();
 
   // §3 PROBLEM — raw grey cloud
