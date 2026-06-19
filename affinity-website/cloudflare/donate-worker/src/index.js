@@ -69,14 +69,29 @@ export default {
     try {
       if (url.pathname === '/api/health') return json({ ok: true }, 200, origin);
 
-      // Public: number of scan files in completed ("uploaded") submissions.
+      // Public: number of individual scan files that fully uploaded.
       if (url.pathname === '/api/donate/count' && req.method === 'GET') {
         const row = await env.DB.prepare(
-          `SELECT COUNT(*) AS n FROM files f
-             JOIN submissions s ON f.submission_id = s.id
-            WHERE s.status = 'uploaded'`
+          `SELECT COUNT(*) AS n FROM files WHERE status = 'uploaded'`
         ).first();
         return json({ count: row?.n || 0 }, 200, origin);
+      }
+
+      // Admin: list files that did NOT fully upload, so you know what to chase.
+      // Guarded by the ADMIN_TOKEN secret (?token=… or X-Admin-Token header).
+      if (url.pathname === '/api/donate/incomplete' && req.method === 'GET') {
+        const token = url.searchParams.get('token') || req.headers.get('X-Admin-Token');
+        if (!env.ADMIN_TOKEN || token !== env.ADMIN_TOKEN)
+          return json({ error: 'Unauthorized' }, 401, origin);
+        const { results } = await env.DB.prepare(
+          `SELECT f.filename, f.key, f.size, f.status,
+                  s.id AS submission_id, s.firm, s.name, s.email, s.created_at
+             FROM files f
+             JOIN submissions s ON f.submission_id = s.id
+            WHERE f.status != 'uploaded'
+            ORDER BY s.created_at DESC, f.filename`
+        ).all();
+        return json({ count: results.length, files: results }, 200, origin);
       }
 
       // 1) Submit contact info → store metadata, start a multipart upload per
@@ -151,25 +166,37 @@ export default {
           headers: { 'Content-Type': 'application/xml' },
         });
         if (!res.ok) return json({ error: `Complete failed (${res.status})` }, 502, origin);
+
+        // Mark this file uploaded so it counts and drops out of /incomplete.
+        await env.DB.prepare(
+          `UPDATE files SET status = 'uploaded', completed_at = ? WHERE key = ?`
+        ).bind(new Date().toISOString(), key).run();
         return json({ ok: true }, 200, origin);
       }
 
-      // 3) Abort one file's multipart upload (best-effort cleanup on failure).
+      // 3) Abort one file's multipart upload (best-effort cleanup on failure)
+      //    and flag the file 'failed' so it shows up in /incomplete.
       if (url.pathname === '/api/donate/abort-file' && req.method === 'POST') {
         const { key, uploadId } = await req.json();
         if (!key || !uploadId) return json({ error: 'Missing key or uploadId' }, 400, origin);
         await r2Client(env).fetch(`${objectUrl(env, key)}?uploadId=${encodeURIComponent(uploadId)}`, { method: 'DELETE' });
+        await env.DB.prepare(`UPDATE files SET status = 'failed' WHERE key = ?`).bind(key).run();
         return json({ ok: true }, 200, origin);
       }
 
-      // 4) Mark a submission complete once all files are uploaded.
+      // 4) Close out a submission: 'uploaded' if every file made it, else 'partial'.
       if (url.pathname === '/api/donate/complete' && req.method === 'POST') {
         const { submissionId } = await req.json();
         if (!submissionId) return json({ error: 'Missing submissionId' }, 400, origin);
+        const row = await env.DB.prepare(
+          `SELECT COUNT(*) AS pending FROM files
+            WHERE submission_id = ? AND status != 'uploaded'`
+        ).bind(submissionId).first();
+        const status = (row?.pending || 0) === 0 ? 'uploaded' : 'partial';
         await env.DB.prepare(`UPDATE submissions SET status = ? WHERE id = ?`)
-          .bind('uploaded', submissionId)
+          .bind(status, submissionId)
           .run();
-        return json({ ok: true }, 200, origin);
+        return json({ ok: true, status }, 200, origin);
       }
 
       return json({ error: 'Not found' }, 404, origin);

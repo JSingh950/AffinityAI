@@ -64,6 +64,37 @@ policy to the **affinity-scans** bucket (R2 → bucket → Settings → CORS Pol
 Also set `ALLOWED_ORIGIN` in `wrangler.toml` to your site origin (instead of `*`)
 for production.
 
+## Per-file status & finding failed uploads
+
+Each `.e57` is its own R2 object and its own row in `files`. A file is marked
+`uploaded` only when its multipart upload is finalized; if the browser upload
+fails it's marked `failed` (the rest of the batch still uploads). A submission
+closes as `uploaded` when every file made it, or `partial` if some didn't.
+
+- **Scans Donated counter** (`GET /api/donate/count`) counts individual files
+  with `status = 'uploaded'` — so a half-failed batch only credits the files
+  that actually landed.
+- **Which files need re-uploading** (`GET /api/donate/incomplete`) lists every
+  `failed`/`pending` file with the donor's firm/name/email so you can chase
+  them. Guarded by the `ADMIN_TOKEN` secret:
+
+```bash
+npx wrangler secret put ADMIN_TOKEN   # set once
+curl "https://affinity-donate.<subdomain>.workers.dev/api/donate/incomplete?token=YOUR_TOKEN"
+```
+
+> Note: a donor who retries creates a new submission, so an earlier `failed`
+> row for the same filename can linger in `/incomplete`. Match on donor +
+> filename when chasing, or prune stale `failed` rows periodically.
+
+## Migrating an existing database
+
+The per-file status columns are added by a migration (run once on the remote DB):
+
+```bash
+npx wrangler d1 execute affinity-donations --remote --file=./migrations/0001_per_file_status.sql
+```
+
 ## Inspecting donations
 
 ```bash
@@ -71,7 +102,11 @@ for production.
 npx wrangler d1 execute affinity-donations --remote --command \
   "SELECT firm, name, email, file_count, status, created_at FROM submissions ORDER BY created_at DESC;"
 
-# List stored files
+# List files and their per-file status
+npx wrangler d1 execute affinity-donations --remote --command \
+  "SELECT filename, size, status, completed_at FROM files ORDER BY id DESC;"
+
+# List stored objects
 npx wrangler r2 object list affinity-scans --prefix donations/
 ```
 

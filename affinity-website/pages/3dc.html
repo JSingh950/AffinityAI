@@ -756,30 +756,40 @@ document.querySelectorAll('.rv,.rv-r').forEach(el=>ro.observe(el));
       const {submissionId,uploads}=await r.json();
       const totalBytes=files.reduce((a,f)=>a+f.size,0)||1;
       let doneBytes=0;
+      const failed=[]; // File objects that didn't fully upload — kept for retry.
       for(let i=0;i<files.length;i++){
         const up=uploads[i];
-        const etags=[];
-        for(const part of up.parts){
-          const start=(part.partNumber-1)*up.partSize;
-          const end=Math.min(start+up.partSize,files[i].size);
-          const blob=files[i].slice(start,end);
-          setStatus('Uploading '+files[i].name+(up.parts.length>1?' — part '+part.partNumber+'/'+up.parts.length:'')+' ('+(i+1)+'/'+files.length+')…');
-          try{
+        // Upload + finalize one file. On any error, abort it server-side (which
+        // flags it 'failed') and move on so the rest of the batch still lands.
+        try{
+          const etags=[];
+          for(const part of up.parts){
+            const start=(part.partNumber-1)*up.partSize;
+            const end=Math.min(start+up.partSize,files[i].size);
+            const blob=files[i].slice(start,end);
+            setStatus('Uploading '+files[i].name+(up.parts.length>1?' — part '+part.partNumber+'/'+up.parts.length:'')+' ('+(i+1)+'/'+files.length+')…');
             const etag=await putPart(part.url,blob,loaded=>{progFill.style.width=Math.round(((doneBytes+loaded)/totalBytes)*100)+'%';});
             etags.push({partNumber:part.partNumber,etag});
             doneBytes+=(end-start);
             progFill.style.width=Math.round((doneBytes/totalBytes)*100)+'%';
-          }catch(err){
-            fetch(DONATE_API+'/api/donate/abort-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:up.key,uploadId:up.uploadId})}).catch(()=>{});
-            throw err;
           }
+          const cr=await fetch(DONATE_API+'/api/donate/complete-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId,key:up.key,uploadId:up.uploadId,parts:etags})});
+          if(!cr.ok)throw new Error('finalize failed ('+cr.status+')');
+        }catch(err){
+          failed.push(files[i]);
+          fetch(DONATE_API+'/api/donate/abort-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:up.key,uploadId:up.uploadId})}).catch(()=>{});
+          doneBytes+=files[i].size; // keep the overall progress bar honest
+          progFill.style.width=Math.round((doneBytes/totalBytes)*100)+'%';
         }
-        const cr=await fetch(DONATE_API+'/api/donate/complete-file',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId,key:up.key,uploadId:up.uploadId,parts:etags})});
-        if(!cr.ok)throw new Error('Failed to finalize '+files[i].name+' ('+cr.status+')');
       }
       await fetch(DONATE_API+'/api/donate/complete',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({submissionId})});
-      setStatus('Thank you! Your scans were received — we\'ll be in touch about early access.','ok');
-      form.reset();files=[];renderFiles();
+      if(failed.length){
+        const ok=files.length-failed.length;
+        setStatus((ok?ok+' file'+(ok>1?'s':'')+' uploaded. ':'')+failed.length+' didn\'t upload: '+failed.map(f=>f.name).join(', ')+'. Please try those again.','err');
+      }else{
+        setStatus('Thank you! Your scans were received — we\'ll be in touch about early access.','ok');
+        form.reset();files=[];renderFiles();
+      }
     }catch(err){setStatus(err.message||'Something went wrong. Please try again.','err');}
     finally{submitBtn.disabled=false;}
   });

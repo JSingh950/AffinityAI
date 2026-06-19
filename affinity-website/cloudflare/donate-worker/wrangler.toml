@@ -22,4 +22,5 @@ R2_ACCOUNT_ID = "23cdeac61afd7576382effeb6626a8b2"
 # Secrets (do NOT put these here — set them with wrangler):
 #   wrangler secret put R2_ACCESS_KEY_ID
 #   wrangler secret put R2_SECRET_ACCESS_KEY
+#   wrangler secret put ADMIN_TOKEN          # gates GET /api/donate/incomplete
 # Create the key pair under: R2 → Manage R2 API Tokens → Create API Token (Object Read & Write)
