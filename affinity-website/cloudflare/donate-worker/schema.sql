@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS submissions (
   phone       TEXT,
   notes       TEXT,
   file_count  INTEGER,
-  status      TEXT,        -- 'pending' → 'uploaded'
+  status      TEXT,        -- 'pending' → 'uploaded' (all files done) | 'partial' (some failed)
   created_at  TEXT
 );
 
@@ -18,6 +18,8 @@ CREATE TABLE IF NOT EXISTS files (
   key            TEXT,     -- R2 object key
   filename       TEXT,
   size           INTEGER,
+  status         TEXT DEFAULT 'pending',  -- 'pending' → 'uploaded' | 'failed'
+  completed_at   TEXT,
   FOREIGN KEY (submission_id) REFERENCES submissions(id)
 );
 
